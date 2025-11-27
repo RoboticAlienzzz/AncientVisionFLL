@@ -1,12 +1,10 @@
-
 import streamlit as st
 import pandas as pd
 import pydeck as pdk
 import firebase_admin
 from firebase_admin import credentials, firestore
-import json
 
-# --------- Firebase init (Cloud μέσω st.secrets) ----------
+# --------- Firebase init ----------
 if not firebase_admin._apps:
     firebase_config = dict(st.secrets["firebase_key"])
     cred = credentials.Certificate(firebase_config)
@@ -14,7 +12,7 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-# --------- Load data from Firestore ----------
+# --------- Load data ----------
 @st.cache_data
 def load_findings():
     docs = (
@@ -45,17 +43,63 @@ def load_findings():
             "latitude", "longitude", "image_url", "notes", "timestamp"
         ])
 
-st.set_page_config(page_title="AncientVisionFLL – Dashboard", layout="wide")
-st.title("🏺 AncientVisionFLL – Dashboard Ευρημάτων")
+# --------- Page config ----------
+st.set_page_config(
+    page_title="AncientVisionFLL – Dashboard",
+    layout="wide",
+    page_icon="🏺"
+)
+
+# ====== HEADER / HERO ======
+st.markdown(
+    """
+    <style>
+    .big-title {
+        font-size: 2.1rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    .subtitle {
+        font-size: 0.95rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    .kpi-card {
+        padding: 0.9rem 1.2rem;
+        border-radius: 0.9rem;
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+    }
+    .kpi-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: #6b7280;
+        letter-spacing: 0.06em;
+    }
+    .kpi-value {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-top: 0.1rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown('<div class="big-title">AncientVisionFLL – Archaeology Dashboard</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="subtitle">Ζωντανή εικόνα για νομίσματα και θραύσματα από τους αρχαιολογικούς χώρους της ομάδας.</div>',
+    unsafe_allow_html=True
+)
 
 findings = load_findings()
 
-# --------- Sidebar Filters ----------
+# ====== SIDEBAR FILTERS ======
 st.sidebar.header("🔎 Φίλτρα")
 
 type_options = ["coin", "sherd", "other"]
 selected_types = st.sidebar.multiselect(
-    "Τύπος Ευρήματος",
+    "Τύπος ευρήματος",
     options=type_options,
     default=type_options
 )
@@ -76,67 +120,113 @@ if selected_types:
 if selected_periods:
     filtered = filtered[filtered["period"].isin(selected_periods)]
 
-# --------- KPIs ----------
-st.markdown("### 📊 Συνολικά Στοιχεία")
-col1, col2, col3 = st.columns(3)
-col1.metric("🪙 Σύνολο Ευρημάτων", len(filtered))
-col2.metric("🏛️ Αρχαιολογικοί Χώροι",
-            filtered["site_name"].nunique() if not filtered.empty else 0)
-col3.metric("🕰️ Διαφορετικές Περίοδοι",
-            filtered["period"].nunique() if not filtered.empty else 0)
+# ====== KPI CARDS ======
+total_findings = len(filtered)
+sites_count = filtered["site_name"].nunique() if not filtered.empty else 0
+periods_count = filtered["period"].nunique() if not filtered.empty else 0
 
-# --------- Map ----------
-st.markdown("### 🗺️ Χάρτης Ευρημάτων")
-map_df = filtered.dropna(subset=["latitude", "longitude"])
+kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
 
-if not map_df.empty:
-    layer = pdk.Layer(
-        "ScatterplotLayer",
-        data=map_df,
-        get_position='[longitude, latitude]',
-        get_color='[200, 30, 0, 160]',
-        get_radius=400,
-        pickable=True
+with kpi_col1:
+    st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Σύνολο ευρημάτων</div>
+            <div class="kpi-value">{total_findings}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+with kpi_col2:
+    st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Αρχαιολογικοί χώροι</div>
+            <div class="kpi-value">{sites_count}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+with kpi_col3:
+    st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Διαφορετικές περίοδοι</div>
+            <div class="kpi-value">{periods_count}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-    view_state = pdk.ViewState(
-        latitude=map_df["latitude"].mean(),
-        longitude=map_df["longitude"].mean(),
-        zoom=6
-    )
+st.markdown("---")
 
-    st.pydeck_chart(pdk.Deck(
-        map_style="mapbox://styles/mapbox/light-v9",
-        initial_view_state=view_state,
-        layers=[layer],
-        tooltip={"text": "{coin_name}\n{site_name}\n{period}"}
-    ))
-else:
-    st.info("Δεν υπάρχουν ευρήματα με συντεταγμένες ακόμη.")
+# ====== MAIN TABS ======
+tab_map, tab_table, tab_photos = st.tabs(["🗺️ Χάρτης", "📋 Πίνακας", "📸 Φωτογραφίες"])
 
-# --------- Table ----------
-st.markdown("### 📋 Πίνακας Ευρημάτων")
-if not filtered.empty:
-    st.dataframe(
-        filtered[[
+# --- Χάρτης ---
+with tab_map:
+    st.subheader("Χωρική κατανομή ευρημάτων")
+    map_df = filtered.dropna(subset=["latitude", "longitude"])
+
+    if not map_df.empty:
+        layer = pdk.Layer(
+            "ScatterplotLayer",
+            data=map_df,
+            get_position='[longitude, latitude]',
+            get_color='[200, 30, 0, 160]',
+            get_radius=400,
+            pickable=True
+        )
+
+        view_state = pdk.ViewState(
+            latitude=map_df["latitude"].mean(),
+            longitude=map_df["longitude"].mean(),
+            zoom=6
+        )
+
+        st.pydeck_chart(pdk.Deck(
+            map_style="mapbox://styles/mapbox/light-v9",
+            initial_view_state=view_state,
+            layers=[layer],
+            tooltip={"text": "{coin_name}\n{site_name}\n{period}"}
+        ))
+    else:
+        st.info("Δεν υπάρχουν ευρήματα με συντεταγμένες ακόμη.")
+
+# --- Πίνακας ---
+with tab_table:
+    st.subheader("Αναλυτικός πίνακας")
+    if not filtered.empty:
+        show_cols = [
             "coin_name", "type", "period",
             "site_name", "latitude", "longitude",
             "timestamp", "notes"
-        ]],
-        use_container_width=True
-    )
-else:
-    st.info("Δεν υπάρχουν ευρήματα για εμφάνιση.")
+        ]
+        st.dataframe(
+            filtered[show_cols],
+            use_container_width=True,
+            height=400
+        )
+    else:
+        st.info("Δεν υπάρχουν ευρήματα για εμφάνιση.")
 
-# --------- Photos ----------
-st.markdown("### 📸 Φωτογραφίες Ευρημάτων")
-if not filtered.empty:
-    for i, row in filtered.iterrows():
-        if row["image_url"]:
-            st.image(
-                row["image_url"],
-                caption=f'{row["coin_name"]} – {row["site_name"]}',
-                width=220
-            )
-else:
-    st.info("Δεν υπάρχουν φωτογραφίες για εμφάνιση.")
+# --- Φωτογραφίες ---
+with tab_photos:
+    st.subheader("Γκαλερί ευρημάτων")
+    if not filtered.empty:
+        # κάνουμε ένα grid 3xN
+        rows = filtered[filtered["image_url"] != ""]
+        if rows.empty:
+            st.info("Δεν υπάρχουν φωτογραφίες ακόμη.")
+        else:
+            cols = st.columns(3)
+            for idx, (_, row) in enumerate(rows.iterrows()):
+                col = cols[idx % 3]
+                with col:
+                    st.image(
+                        row["image_url"],
+                        caption=f'{row["coin_name"]} – {row["site_name"]}',
+                        use_column_width=True
+                    )
+    else:
+        st.info("Δεν υπάρχουν φωτογραφίες για εμφάνιση.")
