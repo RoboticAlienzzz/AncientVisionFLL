@@ -8,7 +8,7 @@ import json
 
 # --------- Firebase init (Cloud μέσω st.secrets) ----------
 if not firebase_admin._apps:
-    firebase_config = json.loads(st.secrets["firebase_key"])
+    firebase_config = dict(st.secrets["firebase_key"])
     cred = credentials.Certificate(firebase_config)
     firebase_admin.initialize_app(cred)
 
