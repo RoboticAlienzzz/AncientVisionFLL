@@ -1,1 +1,8 @@
-
+streamlit
+firebase_admin
+pandas
+pydeck
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+plotly
