@@ -1,0 +1,7 @@
+[theme]
+base = "light"
+primaryColor = "#007bff"              # έντονο μπλε (σαν τα charts στο screenshot)
+backgroundColor = "#f1f2f7"           # ανοιχτό γκρι του dashboard
+secondaryBackgroundColor = "#ffffff"  # λευκό για τα panels
+textColor = "#343a40"                 # σκούρο γκρι κείμενο
+font = "sans serif"
