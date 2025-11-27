@@ -50,48 +50,79 @@ st.set_page_config(
     page_icon="🏺"
 )
 
-# ====== HEADER / HERO ======
+# --------- CSS για Sufee-style χρώματα ----------
 st.markdown(
     """
     <style>
+    /* Σκούρο sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #343a40;
+    }
+    [data-testid="stSidebar"] * {
+        color: #f8f9fa;
+    }
+
+    /* Κύριο φόντο σαν admin template */
+    .main > div {
+        background-color: #f1f2f7;
+    }
+
+    /* Τίτλος & υπότιτλος */
     .big-title {
         font-size: 2.1rem;
         font-weight: 700;
         margin-bottom: 0.25rem;
+        color: #343a40;
     }
     .subtitle {
         font-size: 0.95rem;
         color: #6c757d;
-        margin-bottom: 1rem;
+        margin-bottom: 1.2rem;
+    }
+
+    /* Κάρτες KPI */
+    .kpi-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 0.8rem;
     }
     .kpi-card {
-        padding: 0.9rem 1.2rem;
-        border-radius: 0.9rem;
-        background: #f8f9fa;
-        border: 1px solid #e5e7eb;
+        flex: 1;
+        padding: 0.9rem 1.1rem;
+        border-radius: 0.6rem;
+        color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     }
     .kpi-label {
         font-size: 0.8rem;
         text-transform: uppercase;
-        color: #6b7280;
         letter-spacing: 0.06em;
+        opacity: 0.9;
     }
     .kpi-value {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
         font-weight: 600;
-        margin-top: 0.1rem;
+        margin-top: 0.15rem;
+    }
+
+    .kpi-blue   { background: #007bff; }  /* μπλε */
+    .kpi-teal   { background: #17a2b8; }  /* τιρκουάζ */
+    .kpi-orange { background: #fd7e14; }  /* πορτοκαλί */
+
+    /* Tabs container λίγο πιο “card” */
+    .stTabs [role="tablist"] {
+        border-bottom: 1px solid #dee2e6;
+    }
+    .stTabs [role="tab"] {
+        padding-top: 0.4rem;
+        padding-bottom: 0.4rem;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-st.markdown('<div class="big-title">AncientVisionFLL – Archaeology Dashboard</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="subtitle">Ζωντανή εικόνα για νομίσματα και θραύσματα από τους αρχαιολογικούς χώρους της ομάδας.</div>',
-    unsafe_allow_html=True
-)
-
+# --------- Φόρτωση δεδομένων ----------
 findings = load_findings()
 
 # ====== SIDEBAR FILTERS ======
@@ -120,43 +151,40 @@ if selected_types:
 if selected_periods:
     filtered = filtered[filtered["period"].isin(selected_periods)]
 
+# ====== HEADER ======
+st.markdown(
+    '<div class="big-title">AncientVisionFLL – Archaeology Dashboard</div>',
+    unsafe_allow_html=True
+)
+st.markdown(
+    '<div class="subtitle">Ζωντανή εικόνα για νομίσματα και θραύσματα από τους αρχαιολογικούς χώρους της ομάδας.</div>',
+    unsafe_allow_html=True
+)
+
 # ====== KPI CARDS ======
 total_findings = len(filtered)
 sites_count = filtered["site_name"].nunique() if not filtered.empty else 0
 periods_count = filtered["period"].nunique() if not filtered.empty else 0
 
-kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
-
-with kpi_col1:
-    st.markdown(
-        f"""
-        <div class="kpi-card">
+st.markdown(
+    f"""
+    <div class="kpi-row">
+        <div class="kpi-card kpi-blue">
             <div class="kpi-label">Σύνολο ευρημάτων</div>
             <div class="kpi-value">{total_findings}</div>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
-with kpi_col2:
-    st.markdown(
-        f"""
-        <div class="kpi-card">
+        <div class="kpi-card kpi-teal">
             <div class="kpi-label">Αρχαιολογικοί χώροι</div>
             <div class="kpi-value">{sites_count}</div>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
-with kpi_col3:
-    st.markdown(
-        f"""
-        <div class="kpi-card">
+        <div class="kpi-card kpi-orange">
             <div class="kpi-label">Διαφορετικές περίοδοι</div>
             <div class="kpi-value">{periods_count}</div>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 st.markdown("---")
 
@@ -205,7 +233,7 @@ with tab_table:
         st.dataframe(
             filtered[show_cols],
             use_container_width=True,
-            height=400
+            height=420
         )
     else:
         st.info("Δεν υπάρχουν ευρήματα για εμφάνιση.")
@@ -214,7 +242,6 @@ with tab_table:
 with tab_photos:
     st.subheader("Γκαλερί ευρημάτων")
     if not filtered.empty:
-        # κάνουμε ένα grid 3xN
         rows = filtered[filtered["image_url"] != ""]
         if rows.empty:
             st.info("Δεν υπάρχουν φωτογραφίες ακόμη.")
