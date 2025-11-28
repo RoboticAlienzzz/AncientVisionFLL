@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import pydeck as pdk
 import firebase_admin
 from firebase_admin import credentials, firestore
 
@@ -50,7 +49,7 @@ st.set_page_config(
     page_icon="🏺"
 )
 
-# --------- CSS για Sufee-style ----------
+# --------- CSS για Sufee-style + cards ----------
 st.markdown(
     """
     <style>
@@ -67,18 +66,33 @@ st.markdown(
         background-color: #f1f2f7;
     }
 
+    /* Header card για τίτλο project */
+    .header-card {
+        background-color: #ffffff;
+        border-radius: 0.9rem;
+        padding: 1.2rem 1.4rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        margin-bottom: 1rem;
+    }
     .big-title {
         font-size: 2.1rem;
         font-weight: 700;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.15rem;
         color: #343a40;
     }
     .subtitle {
         font-size: 0.95rem;
         color: #6c757d;
-        margin-bottom: 1.2rem;
+        margin-bottom: 0.2rem;
+    }
+    .subtitle-small {
+        font-size: 0.8rem;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
     }
 
+    /* Κάρτες KPI */
     .kpi-row {
         display: flex;
         gap: 1rem;
@@ -107,6 +121,7 @@ st.markdown(
     .kpi-teal   { background: #17a2b8; }
     .kpi-orange { background: #fd7e14; }
 
+    /* Generic card (για gallery) */
     .card {
         background-color: #ffffff;
         border-radius: 0.8rem;
@@ -114,20 +129,12 @@ st.markdown(
         box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         margin-bottom: 1rem;
     }
-
-    .stTabs [role="tablist"] {
-        border-bottom: 1px solid #dee2e6;
-    }
-    .stTabs [role="tab"] {
-        padding-top: 0.4rem;
-        padding-bottom: 0.4rem;
-    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# --------- Filters & data ----------
+# --------- Φίλτρα & δεδομένα ----------
 findings = load_findings()
 
 st.sidebar.header("🔎 Φίλτρα")
@@ -155,17 +162,22 @@ if selected_types:
 if selected_periods:
     filtered = filtered[filtered["period"].isin(selected_periods)]
 
-# ====== Header ======
+# ====== HEADER CARD με τίτλο project ======
 st.markdown(
-    '<div class="big-title">AncientVisionFLL – Archaeology Dashboard</div>',
-    unsafe_allow_html=True
-)
-st.markdown(
-    '<div class="subtitle">Ζωντανή εικόνα για νομίσματα και θραύσματα από τους αρχαιολογικούς χώρους της ομάδας.</div>',
+    """
+    <div class="header-card">
+        <div class="subtitle-small">FLL Innovation Project</div>
+        <div class="big-title">AncientVisionFLL – Archaeology Dashboard</div>
+        <div class="subtitle">
+            Ψηφιακό εργαλείο για αναγνώριση νομισμάτων & θραυσμάτων και
+            οργάνωση αρχαιολογικών ευρημάτων σε πραγματικό χρόνο.
+        </div>
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
-# ====== KPI cards ======
+# ====== KPI CARDS (χωρίς χάρτη & πίνακα εδώ) ======
 total_findings = len(filtered)
 sites_count = filtered["site_name"].nunique() if not filtered.empty else 0
 periods_count = filtered["period"].nunique() if not filtered.empty else 0
@@ -192,75 +204,28 @@ st.markdown(
 
 st.markdown("---")
 
-# ====== Tabs μέσα σε “κάρτα” ======
-with st.container():
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    tab_map, tab_table, tab_photos = st.tabs(["🗺️ Χάρτης", "📋 Πίνακας", "📸 Φωτογραφίες"])
+# ====== GALLERY CARD (μόνο φωτογραφίες στο dashboard) ======
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown("### 📸 Πρόσφατα ευρήματα")
 
-    # --- Χάρτης (παραμένει full εδώ) ---
-    with tab_map:
-        st.subheader("Χωρική κατανομή ευρημάτων")
-        map_df = filtered.dropna(subset=["latitude", "longitude"])
+if not filtered.empty:
+    rows = filtered.sort_values("timestamp", ascending=False)
+    rows = rows[rows["image_url"] != ""]
+    if rows.empty:
+        st.info("Δεν υπάρχουν φωτογραφίες ακόμη. Καταχώρισε ένα νέο εύρημα από τη σελίδα ‘New Finding’.")
+    else:
+        cols = st.columns(4)
+        max_photos = min(8, len(rows))  # μέχρι 8 thumbnails
+        for idx, (_, row) in enumerate(rows.head(max_photos).iterrows()):
+            col = cols[idx % 4]
+            with col:
+                st.image(
+                    row["image_url"],
+                    caption=f'{row["coin_name"]}',
+                    use_column_width=True
+                )
+else:
+    st.info("Δεν υπάρχουν ευρήματα ακόμη. Καταχώρισε το πρώτο από τη σελίδα ‘New Finding’.")
+st.markdown('</div>', unsafe_allow_html=True)
 
-        if not map_df.empty:
-            layer = pdk.Layer(
-                "ScatterplotLayer",
-                data=map_df,
-                get_position='[longitude, latitude]',
-                get_color='[200, 30, 0, 160]',
-                get_radius=400,
-                pickable=True
-            )
-
-            view_state = pdk.ViewState(
-                latitude=map_df["latitude"].mean(),
-                longitude=map_df["longitude"].mean(),
-                zoom=6
-            )
-
-            st.pydeck_chart(pdk.Deck(
-                map_style="mapbox://styles/mapbox/light-v9",
-                initial_view_state=view_state,
-                layers=[layer],
-                tooltip={"text": "{coin_name}\n{site_name}\n{period}"}
-            ))
-        else:
-            st.info("Δεν υπάρχουν ευρήματα με συντεταγμένες ακόμη.")
-
-    # --- Πίνακας ---
-    with tab_table:
-        st.subheader("Αναλυτικός πίνακας")
-        if not filtered.empty:
-            show_cols = [
-                "coin_name", "type", "period",
-                "site_name", "latitude", "longitude",
-                "timestamp", "notes"
-            ]
-            st.dataframe(
-                filtered[show_cols],
-                use_container_width=True,
-                height=420
-            )
-        else:
-            st.info("Δεν υπάρχουν ευρήματα για εμφάνιση.")
-
-    # --- Φωτογραφίες ---
-    with tab_photos:
-        st.subheader("Γκαλερί ευρημάτων")
-        if not filtered.empty:
-            rows = filtered[filtered["image_url"] != ""]
-            if rows.empty:
-                st.info("Δεν υπάρχουν φωτογραφίες ακόμη.")
-            else:
-                cols = st.columns(3)
-                for idx, (_, row) in enumerate(rows.iterrows()):
-                    col = cols[idx % 3]
-                    with col:
-                        st.image(
-                            row["image_url"],
-                            caption=f'{row["coin_name"]} – {row["site_name"]}',
-                            use_column_width=True
-                        )
-        else:
-            st.info("Δεν υπάρχουν φωτογραφίες για εμφάνιση.")
-    st.markdown('</div>', unsafe_allow_html=True)
+# ΤΕΛΟΣ – ο χάρτης & ο πίνακας είναι μόνο στην σελίδα Map/Table
