@@ -8,8 +8,8 @@ from googleapiclient.errors import HttpError
 # -----------------------------------------------------
 # ΒΑΛΕ ΕΔΩ ΤΑ ΣΩΣΤΑ FOLDER IDs ΑΠΟ ΤΟ GOOGLE DRIVE
 # -----------------------------------------------------
-COINS_FOLDER_ID = "PASTE_YOUR_COINS_FOLDER_ID_HERE"
-SHERDS_FOLDER_ID = "PASTE_YOUR_SHERDS_FOLDER_ID_HERE"
+COINS_FOLDER_ID = "1T2BRWHcKAeo5ppav_XhNZDDGQMoJXwdM"
+SHERDS_FOLDER_ID = "1nX5zMdQv4N5sp51424cY5DvcA4Es5es4"
 
 # Λίγο πιο “ανοιχτό” scope για Drive
 SCOPES = ["https://www.googleapis.com/auth/drive"]
