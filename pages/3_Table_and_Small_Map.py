@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import pydeck as pdk
 import firebase_admin
 from firebase_admin import credentials, firestore
 
@@ -12,7 +11,7 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-# --------- Φόρτωση δεδομένων ----------
+# --------- Φόρτωση δεδομένων από Firestore ----------
 @st.cache_data
 def load_findings():
     docs = (
@@ -43,7 +42,12 @@ def load_findings():
             "latitude", "longitude", "image_url", "notes", "timestamp"
         ])
 
-st.set_page_config(page_title="Πίνακας & Μικρός Χάρτης", layout="wide", page_icon="📋")
+# --------- Ρυθμίσεις σελίδας ----------
+st.set_page_config(
+    page_title="Πίνακας & μικρός χάρτης",
+    layout="wide",
+    page_icon="📋"
+)
 
 # --------- CSS για cards & φόντο ----------
 st.markdown(
@@ -66,6 +70,7 @@ st.markdown(
 
 st.markdown("## 📋 Πίνακας ευρημάτων & μικρός χάρτης")
 
+# --------- Δεδομένα ----------
 findings = load_findings()
 
 # --------- Sidebar φίλτρα ----------
@@ -94,54 +99,40 @@ if selected_types:
 if selected_periods:
     filtered = filtered[filtered["period"].isin(selected_periods)]
 
-# ====== Πάνω σειρά: μικρός χάρτης πάνω αριστερά ======
-col_map, col_dummy = st.columns([1.2, 2])
+# ====== Πάνω σειρά: μικρός χάρτης αριστερά, πληροφορίες δεξιά ======
+col_map, col_info = st.columns([1.2, 2])
 
 with col_map:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("Μικρός χάρτης ευρημάτων")
 
-    map_df = filtered.dropna(subset=["latitude", "longitude"])
+    # κρατάμε μόνο όσα έχουν συντεταγμένες
+    map_df = filtered.dropna(subset=["latitude", "longitude"]).copy()
 
     if not map_df.empty:
-        layer = pdk.Layer(
-            "ScatterplotLayer",
-            data=map_df,
-            get_position='[longitude, latitude]',
-            get_color='[200, 30, 0, 160]',
-            get_radius=500,
-            pickable=True
+        # st.map θέλει στήλες lat / lon
+        map_df = map_df.rename(columns={"latitude": "lat", "longitude": "lon"})
+        st.map(
+            map_df[["lat", "lon"]],
+            zoom=6,
+            use_container_width=True
         )
-
-        view_state = pdk.ViewState(
-            latitude=map_df["latitude"].mean(),
-            longitude=map_df["longitude"].mean(),
-            zoom=6
-        )
-
-        deck = pdk.Deck(
-            map_style="mapbox://styles/mapbox/light-v9",
-            initial_view_state=view_state,
-            layers=[layer],
-            tooltip={"text": "{coin_name}\\n{site_name}\\n{period}"}
-        )
-        # μικρό «τετράγωνο» παράθυρο χάρτη
-        st.pydeck_chart(deck, use_container_width=True, height=260)
     else:
         st.info("Δεν υπάρχουν ευρήματα με συντεταγμένες ακόμη.")
+
     st.markdown('</div>', unsafe_allow_html=True)
 
-with col_dummy:
-    # αφήνουμε κενό ή βάζουμε ένα μικρό κείμενο/οδηγίες
+with col_info:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("Πληροφορίες προβολής")
     st.write(
-        "Σε αυτή τη σελίδα βλέπεις τον πίνακα της βάσης δεδομένων και "
-        "έναν μικρό χάρτη επάνω αριστερά για γρήγορο οπτικό έλεγχο."
+        "Σε αυτή τη σελίδα βλέπεις τον αναλυτικό πίνακα της βάσης δεδομένων "
+        "και έναν μικρό χάρτη επάνω αριστερά για γρήγορο οπτικό έλεγχο των ευρημάτων. "
+        "Τα φίλτρα στην αριστερή μπάρα επηρεάζουν και τον χάρτη και τον πίνακα."
     )
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ====== Κάτω: μεγάλος πίνακας βάσης ======
+# ====== Κάτω: μεγάλος πίνακας ευρημάτων ======
 st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("Αναλυτικός πίνακας ευρημάτων")
 
