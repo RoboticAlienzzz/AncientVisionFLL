@@ -11,7 +11,7 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-# --------- Load data ----------
+# --------- Φόρτωση δεδομένων ----------
 @st.cache_data
 def load_findings():
     docs = (
@@ -30,6 +30,9 @@ def load_findings():
             "site_name": d.get("site_name", ""),
             "latitude": d.get("latitude", None),
             "longitude": d.get("longitude", None),
+            # νέο πεδίο για εικόνες αποθηκευμένες στη Firestore
+            "image_bytes": d.get("image_bytes", None),
+            # για συμβατότητα με παλιότερες εγγραφές που ίσως έχουν μόνο URL
             "image_url": d.get("image_url", ""),
             "notes": d.get("notes", ""),
             "timestamp": d.get("timestamp", "")
@@ -39,12 +42,13 @@ def load_findings():
     else:
         return pd.DataFrame(columns=[
             "id", "coin_name", "type", "period", "site_name",
-            "latitude", "longitude", "image_url", "notes", "timestamp"
+            "latitude", "longitude", "image_bytes", "image_url",
+            "notes", "timestamp"
         ])
 
 # --------- Page config ----------
 st.set_page_config(
-    page_title="AncientVision – Dashboard",
+    page_title="AncientVisionFLL – Dashboard",
     layout="wide",
     page_icon="🏺"
 )
@@ -121,7 +125,7 @@ st.markdown(
     .kpi-teal   { background: #17a2b8; }
     .kpi-orange { background: #fd7e14; }
 
-    /* Generic card (για gallery) */
+    /* Generic card (για gallery κτλ.) */
     .card {
         background-color: #ffffff;
         border-radius: 0.8rem;
@@ -134,7 +138,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --------- Φίλτρα & δεδομένα ----------
+# --------- Δεδομένα & φίλτρα ----------
 findings = load_findings()
 
 st.sidebar.header("🔎 Φίλτρα")
@@ -167,7 +171,7 @@ st.markdown(
     """
     <div class="header-card">
         <div class="subtitle-small">FLL Innovation Project</div>
-        <div class="big-title">AncientVision – Dashboard</div>
+        <div class="big-title">AncientVisionFLL – Archaeology Dashboard</div>
         <div class="subtitle">
             Ψηφιακό εργαλείο για αναγνώριση νομισμάτων & θραυσμάτων και
             οργάνωση αρχαιολογικών ευρημάτων σε πραγματικό χρόνο.
@@ -177,7 +181,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ====== KPI CARDS (χωρίς χάρτη & πίνακα εδώ) ======
+# ====== KPI CARDS ======
 total_findings = len(filtered)
 sites_count = filtered["site_name"].nunique() if not filtered.empty else 0
 periods_count = filtered["period"].nunique() if not filtered.empty else 0
@@ -186,15 +190,15 @@ st.markdown(
     f"""
     <div class="kpi-row">
         <div class="kpi-card kpi-blue">
-            <div class="kpi-label">Συνολο ευρηματων</div>
+            <div class="kpi-label">Σύνολο ευρημάτων</div>
             <div class="kpi-value">{total_findings}</div>
         </div>
         <div class="kpi-card kpi-teal">
-            <div class="kpi-label">Αρχαιολογικοι χωροι</div>
+            <div class="kpi-label">Αρχαιολογικοί χώροι</div>
             <div class="kpi-value">{sites_count}</div>
         </div>
         <div class="kpi-card kpi-orange">
-            <div class="kpi-label">Διαφορετικες περιοδοι</div>
+            <div class="kpi-label">Διαφορετικές περίοδοι</div>
             <div class="kpi-value">{periods_count}</div>
         </div>
     </div>
@@ -204,13 +208,20 @@ st.markdown(
 
 st.markdown("---")
 
-# ====== GALLERY CARD (μόνο φωτογραφίες στο dashboard) ======
+# ====== GALLERY CARD (πρόσφατα ευρήματα με εικόνες) ======
 st.markdown('<div class="card">', unsafe_allow_html=True)
-st.markdown("### 📸 Προσφατα ευρηματα")
+st.markdown("### 📸 Πρόσφατα ευρήματα")
 
 if not filtered.empty:
+    # ταξινομούμε από τα πιο πρόσφατα
     rows = filtered.sort_values("timestamp", ascending=False)
-    rows = rows[rows["image_url"] != ""]
+
+    # κρατάμε μόνο όσα έχουν είτε image_bytes είτε image_url
+    rows = rows[
+        rows["image_bytes"].notnull() |
+        (rows["image_url"].astype(str) != "")
+    ]
+
     if rows.empty:
         st.info("Δεν υπάρχουν φωτογραφίες ακόμη. Καταχώρισε ένα νέο εύρημα από τη σελίδα ‘New Finding’.")
     else:
@@ -219,13 +230,13 @@ if not filtered.empty:
         for idx, (_, row) in enumerate(rows.head(max_photos).iterrows()):
             col = cols[idx % 4]
             with col:
+                # επιλέγουμε προτιμησιακά τα bytes, αλλιώς URL (για παλιά δεδομένα)
+                img = row["image_bytes"] if row["image_bytes"] is not None and row["image_bytes"] != b"" else row["image_url"]
                 st.image(
-                    row["image_url"],
+                    img,
                     caption=f'{row["coin_name"]}',
                     use_column_width=True
                 )
 else:
     st.info("Δεν υπάρχουν ευρήματα ακόμη. Καταχώρισε το πρώτο από τη σελίδα ‘New Finding’.")
 st.markdown('</div>', unsafe_allow_html=True)
-
-# ΤΕΛΟΣ – ο χάρτης & ο πίνακας είναι μόνο στην σελίδα Map/Table
