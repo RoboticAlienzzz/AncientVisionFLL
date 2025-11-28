@@ -3,8 +3,6 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
 
-from drive_utils import upload_image_to_drive
-
 # --------- Firebase init ----------
 if not firebase_admin._apps:
     firebase_config = dict(st.secrets["firebase_key"])
@@ -18,7 +16,7 @@ st.set_page_config(page_title="Νέο εύρημα", layout="centered", page_ico
 st.markdown("## ➕ Καταχώριση νέου αρχαιολογικού ευρήματος")
 st.markdown(
     "Συμπλήρωσε τα στοιχεία και βγάλε ή ανέβασε μια φωτογραφία. "
-    "Η εικόνα αποθηκεύεται αυτόματα στο Google Drive και τα δεδομένα στο Firebase."
+    "Η εικόνα αποθηκεύεται απευθείας στη βάση δεδομένων μαζί με τα υπόλοιπα στοιχεία."
 )
 
 # --------- Φόρμα νέου ευρήματος ----------
@@ -56,7 +54,6 @@ with st.form("new_finding_form"):
     submitted = st.form_submit_button("💾 Αποθήκευση ευρήματος")
 
 if submitted:
-    # Ποιο “uploaded file” θα χρησιμοποιήσουμε (κάμερα ή αρχείο)
     uploaded_image = camera_image if camera_image is not None else file_image
 
     if not coin_name or not site_name:
@@ -64,12 +61,9 @@ if submitted:
     elif uploaded_image is None:
         st.error("Πρέπει να δώσεις μία φωτογραφία (κάμερα ή αρχείο).")
     else:
-        # --------- Ανεβάζουμε στο Google Drive ----------
-        with st.spinner("Ανέβασμα φωτογραφίας στο Google Drive..."):
-            drive_type = obj_type if obj_type in ["coin", "sherd"] else "sherd"
-            image_url = upload_image_to_drive(uploaded_image, obj_type=drive_type)
+        # Παίρνουμε τα bytes της εικόνας
+        image_bytes = uploaded_image.getvalue()
 
-        # --------- Αποθήκευση στο Firestore ----------
         data = {
             "coin_name": coin_name,
             "type": obj_type,
@@ -77,7 +71,7 @@ if submitted:
             "site_name": site_name,
             "latitude": float(latitude) if latitude else None,
             "longitude": float(longitude) if longitude else None,
-            "image_url": image_url,
+            "image_bytes": image_bytes,  # <-- αποθήκευση φωτογραφίας στη Firestore
             "notes": notes,
             "timestamp": datetime.now()
         }
