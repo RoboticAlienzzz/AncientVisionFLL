@@ -52,7 +52,7 @@ def upload_image_to_drive(uploaded_file, obj_type: str = "coin") -> str:
     media = MediaIoBaseUpload(
         file_stream,
         mimetype=uploaded_file.type,
-        resumable=True,
+        resumable=False,
     )
 
     # Ανεβάζουμε το αρχείο
