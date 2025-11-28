@@ -44,7 +44,7 @@ def load_findings():
 
 # --------- Page config ----------
 st.set_page_config(
-    page_title="AncientVisionFLL – Dashboard",
+    page_title="AncientVision – Dashboard",
     layout="wide",
     page_icon="🏺"
 )
