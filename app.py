@@ -167,7 +167,7 @@ st.markdown(
     """
     <div class="header-card">
         <div class="subtitle-small">FLL Innovation Project</div>
-        <div class="big-title">AncientVisionFLL – Archaeology Dashboard</div>
+        <div class="big-title">AncientVision – Dashboard</div>
         <div class="subtitle">
             Ψηφιακό εργαλείο για αναγνώριση νομισμάτων & θραυσμάτων και
             οργάνωση αρχαιολογικών ευρημάτων σε πραγματικό χρόνο.
@@ -186,15 +186,15 @@ st.markdown(
     f"""
     <div class="kpi-row">
         <div class="kpi-card kpi-blue">
-            <div class="kpi-label">Σύνολο ευρημάτων</div>
+            <div class="kpi-label">Συνολο ευρηματων</div>
             <div class="kpi-value">{total_findings}</div>
         </div>
         <div class="kpi-card kpi-teal">
-            <div class="kpi-label">Αρχαιολογικοί χώροι</div>
+            <div class="kpi-label">Αρχαιολογικοι χωροι</div>
             <div class="kpi-value">{sites_count}</div>
         </div>
         <div class="kpi-card kpi-orange">
-            <div class="kpi-label">Διαφορετικές περίοδοι</div>
+            <div class="kpi-label">Διαφορετικες περιοδοι</div>
             <div class="kpi-value">{periods_count}</div>
         </div>
     </div>
@@ -206,7 +206,7 @@ st.markdown("---")
 
 # ====== GALLERY CARD (μόνο φωτογραφίες στο dashboard) ======
 st.markdown('<div class="card">', unsafe_allow_html=True)
-st.markdown("### 📸 Πρόσφατα ευρήματα")
+st.markdown("### 📸 Προσφατα ευρηματα")
 
 if not filtered.empty:
     rows = filtered.sort_values("timestamp", ascending=False)
