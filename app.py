@@ -80,7 +80,7 @@ if "splash_done" not in st.session_state:
         progress.progress(i + 1)
 
     st.session_state["splash_done"] = True
-    st.experimental_rerun()
+    st.rerun()
 
 # --------- Φόρτωση δεδομένων ----------
 @st.cache_data
