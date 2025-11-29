@@ -308,10 +308,17 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown(
     """
     <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    div[data-testid="stToolbar"] {visibility: hidden;}
+    /* κρύβουμε menu / header / footer / toolbar σε όλες τις συσκευές */
+    #MainMenu {display: none !important;}
+    header {display: none !important;}
+    footer {display: none !important;}
+    div[data-testid="stToolbar"] {display: none !important;}
+
+    /* σε περίπτωση που εμφανίζεται ειδικό badge (mobile) */
+    .viewerBadge_container__1QSob {display: none !important;}
+
+    /* generic: κρύψε οποιοδήποτε link δείχνει προς streamlit.io */
+    a[href*="streamlit.io"] {display: none !important;}
     </style>
     """,
     unsafe_allow_html=True
