@@ -20,14 +20,26 @@ st.set_page_config(
 )
 
 # --------- Global background & SPLASH screen ----------
-# Gradient background για όλη την εφαρμογή
+
+DARK_BG = "#384655"  # βασικό σκούρο χρώμα για όλη την εφαρμογή
+
+# Ενιαίο σκοτεινό background για όλη την εφαρμογή
 st.markdown(
-    """
+    f"""
     <style>
-    .stApp {
-        background: radial-gradient(circle at top left, #1c7ed6 0, #0b7285 35%, #111827 85%);
+    .stApp {{
+        background-color: {DARK_BG} !important;
+        background: {DARK_BG} !important;
         color: #f8fafc;
-    }
+    }}
+
+    html, body {{
+        background-color: {DARK_BG} !important;
+    }}
+
+    .main {{
+        background-color: {DARK_BG} !important;
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -115,20 +127,20 @@ def load_findings():
             "notes", "timestamp"
         ])
 
-# --------- Extra CSS για cards / sidebar / KPI ----------
+# --------- Extra CSS για sidebar / cards / KPI ----------
 st.markdown(
-    """
+    f"""
     <style>
-    /* Σκούρο sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #111827;
-    }
-    [data-testid="stSidebar"] * {
-        color: #f8f9fa;
-    }
+    /* Σκούρο sidebar με το ίδιο χρώμα σε ΟΛΕΣ τις σελίδες */
+    [data-testid="stSidebar"] {{
+        background-color: {DARK_BG} !important;
+    }}
+    [data-testid="stSidebar"] * {{
+        color: #f8f9fa !important;
+    }}
 
     /* Header card για τίτλο project */
-    .header-card {
+    .header-card {{
         background-color: #ffffff;
         border-radius: 0.9rem;
         padding: 1.2rem 1.4rem;
@@ -136,59 +148,60 @@ st.markdown(
         margin-bottom: 1rem;
         margin-top: 1.5rem;      /* κενό από το πάνω header bar */
         color: #111827;
-    }
-    .big-title {
+    }}
+    .big-title {{
         font-size: 2.1rem;
         font-weight: 700;
         margin-bottom: 0.15rem;
         color: #111827;
-    }
-    .subtitle {
+    }}
+    .subtitle {{
         font-size: 0.95rem;
         color: #6c757d;
         margin-bottom: 0.2rem;
-    }
-    .subtitle-small {
+    }}
+    .subtitle-small {{
         font-size: 0.8rem;
         color: #9ca3af;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-    }
+    }}
 
     /* Κάρτες KPI */
-    .kpi-row {
+    .kpi-row {{
         display: flex;
         gap: 1rem;
         margin-bottom: 0.8rem;
-    }
-    .kpi-card {
+    }}
+    .kpi-card {{
         flex: 1;
         padding: 0.9rem 1.1rem;
         border-radius: 0.6rem;
         color: #fff;
         box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    }
-    .kpi-label {
+    }}
+    .kpi-label {{
         font-size: 0.8rem;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         opacity: 0.9;
-    }
-    .kpi-value {
+    }}
+    .kpi-value {{
         font-size: 1.5rem;
         font-weight: 600;
         margin-top: 0.15rem;
-    }
+    }}
 
-    .kpi-blue   { background: #007bff; }
-    .kpi-teal   { background: #17a2b8; }
-    .kpi-orange { background: #fd7e14; }
+    .kpi-blue   {{ background: #007bff; }}
+    .kpi-teal   {{ background: #17a2b8; }}
+    .kpi-orange {{ background: #fd7e14; }}
 
-    /* Λίγο μικρότερο padding για να θυμίζει web app */
-    .block-container {
+    /* Μικρότερο padding για να θυμίζει web app */
+    .block-container {{
         padding-top: 0.5rem;
         padding-bottom: 1.2rem;
-    }
+        background-color: transparent !important;
+    }}
     </style>
     """,
     unsafe_allow_html=True
