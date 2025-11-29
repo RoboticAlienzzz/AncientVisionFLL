@@ -5,8 +5,9 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # ------------------------- COLORS -------------------------
-BG_MAIN = "#384655"      # background for all pages + header bar
-BG_SIDEBAR = "#2e3a47"   # sidebar background color
+# Corrected: first background color → BG_MAIN, second → BG_SIDEBAR
+BG_MAIN = "#2e3a47"      # background for all pages + header bar
+BG_SIDEBAR = "#384655"   # sidebar background color
 TEXT_LIGHT = "#f8fafc"
 
 
@@ -45,6 +46,7 @@ st.markdown(
 
     .main {{
         background-color: {BG_MAIN} !important;
+        color: {TEXT_LIGHT} !important;
     }}
 
     /* ---------- HEADER BAR (top menu) ---------- */
@@ -63,7 +65,7 @@ st.markdown(
         color: {TEXT_LIGHT} !important;
     }}
 
-    /* ---------- CARDS & LAYOUT ---------- */
+    /* ---------- CARDS ---------- */
     .header-card {{
         background-color: white !important;
         color: #111 !important;
@@ -156,7 +158,6 @@ def load_findings():
             "notes": d.get("notes", ""),
             "timestamp": d.get("timestamp", "")
         })
-
     return pd.DataFrame(data)
 
 
@@ -165,11 +166,10 @@ findings = load_findings()
 
 st.sidebar.header("🔎 Φίλτρα")
 
-type_options = ["coin", "sherd", "other"]
 selected_types = st.sidebar.multiselect(
     "Τύπος ευρήματος",
-    type_options,
-    default=type_options
+    ["coin", "sherd", "other"],
+    default=["coin", "sherd", "other"]
 )
 
 periods = (
@@ -194,14 +194,14 @@ if selected_periods:
 st.markdown(
     """
     <div class="header-card">
-        <div class="subtitle-small" style="font-size:0.8rem; text-transform:uppercase; color:#666;">
+        <div style="font-size:0.8rem; text-transform:uppercase; color:#666;">
             FLL Innovation Project
         </div>
         <div style="font-size:2.1rem; font-weight:700; margin-bottom:0.25rem;">
             AncientVisionFLL – Archaeology Dashboard
         </div>
         <div style="color:#444;">
-            Ψηφιακό εργαλείο για καταγραφή & οργάνωση αρχαιολογικών ευρημάτων.
+            Ψηφιακό εργαλείο για καταγραφή & ανάλυση αρχαιολογικών ευρημάτων.
         </div>
     </div>
     """,
@@ -214,37 +214,39 @@ total = len(filtered)
 sites = filtered["site_name"].nunique() if not filtered.empty else 0
 periods_count = filtered["period"].nunique() if not filtered.empty else 0
 
-kpi_css = """
+st.markdown(
+    """
     <style>
-    .kpi-row {
-        display: flex; gap: 1rem;
-        margin-bottom: 1rem;
-    }
+    .kpi-row {display:flex; gap:1rem; margin-bottom:1rem;}
     .kpi-card {
-        flex: 1;
-        padding: 1rem;
-        border-radius: 0.6rem;
-        color: #fff;
-        font-weight: 600;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.22);
+        flex:1;
+        padding:1rem;
+        border-radius:0.6rem;
+        color:#fff;
+        font-weight:600;
+        box-shadow:0 2px 6px rgba(0,0,0,0.22);
     }
     </style>
-"""
-st.markdown(kpi_css, unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-st.markdown(f"""
-<div class="kpi-row">
-    <div class="kpi-card" style="background:#007bff;">
-        Σύνολο ευρημάτων<br><span style="font-size:1.6rem;">{total}</span>
+st.markdown(
+    f"""
+    <div class="kpi-row">
+        <div class="kpi-card" style="background:#007bff;">
+            Σύνολο ευρημάτων<br><span style="font-size:1.6rem;">{total}</span>
+        </div>
+        <div class="kpi-card" style="background:#17a2b8;">
+            Αρχαιολογικοί χώροι<br><span style="font-size:1.6rem;">{sites}</span>
+        </div>
+        <div class="kpi-card" style="background:#fd7e14;">
+            Διαφορετικές περίοδοι<br><span style="font-size:1.6rem;">{periods_count}</span>
+        </div>
     </div>
-    <div class="kpi-card" style="background:#17a2b8;">
-        Αρχαιολογικοί χώροι<br><span style="font-size:1.6rem;">{sites}</span>
-    </div>
-    <div class="kpi-card" style="background:#fd7e14;">
-        Διαφορετικές περίοδοι<br><span style="font-size:1.6rem;">{periods_count}</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
 
 # --------- GALLERY ----------
@@ -269,5 +271,5 @@ else:
     st.info("Δεν υπάρχουν ευρήματα ακόμη.")
 
 
-# --------- HIDE FOOTER ONLY ----------
+# --------- Hide footer ---------
 st.markdown("<style>footer{visibility:hidden;}</style>", unsafe_allow_html=True)
