@@ -5,9 +5,9 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # ------------------------- COLORS -------------------------
-# Corrected: first background color → BG_MAIN, second → BG_SIDEBAR
-BG_MAIN = "#2e3a47"      # background for all pages + header bar
-BG_SIDEBAR = "#384655"   # sidebar background color
+BG_MAIN = "#2e3a47"      # background for όλες τις σελίδες + header bar
+BG_SIDEBAR = "#384655"   # background για sidebar
+CARD_COLOR = "#3f4a5b"   # χρώμα από την εικόνα για header card + φίλτρα
 TEXT_LIGHT = "#f8fafc"
 
 
@@ -65,21 +65,69 @@ st.markdown(
         color: {TEXT_LIGHT} !important;
     }}
 
-    /* ---------- CARDS ---------- */
-    .header-card {{
-        background-color: white !important;
-        color: #111 !important;
-        border-radius: 0.8rem;
-        padding: 1.4rem;
-        margin-top: 1.4rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-    }}
-
+    /* Βασικό container της σελίδας */
     .block-container {{
         background-color: transparent !important;
         padding-top: 0.5rem;
         padding-bottom: 1.5rem;
+    }}
+
+    /* ---------- HEADER CARD (AncientVisionFLL – Archaeology Dashboard) ---------- */
+    .header-card {{
+        background-color: {CARD_COLOR} !important;
+        color: {TEXT_LIGHT} !important;
+        border-radius: 0.8rem;
+        padding: 1.4rem;
+        margin-top: 2.6rem;      /* 👉 πιο κάτω ώστε να μη χτυπάει στο header bar */
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+    }}
+
+    /* ---------- KPI ROW ---------- */
+    .kpi-row {{
+        display:flex;
+        gap:1rem;
+        margin-bottom:1rem;
+    }}
+    .kpi-card {{
+        flex:1;
+        padding:1rem;
+        border-radius:0.6rem;
+        color:#fff;
+        font-weight:600;
+        box-shadow:0 2px 6px rgba(0,0,0,0.22);
+    }}
+
+    /* ---------- ΦΙΛΤΡΑ SIDEBAR ΜΕ CARD_COLOR ---------- */
+
+    /* Text & number inputs */
+    [data-testid="stSidebar"] input[type="text"],
+    [data-testid="stSidebar"] input[type="number"],
+    [data-testid="stSidebar"] textarea {{
+        background-color: {CARD_COLOR} !important;
+        color: {TEXT_LIGHT} !important;
+        border-radius: 0.4rem !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+    }}
+
+    /* Select / multiselect "κουτάκια" */
+    [data-testid="stSidebar"] div[data-baseweb="select"] > div {{
+        background-color: {CARD_COLOR} !important;
+        color: {TEXT_LIGHT} !important;
+        border-radius: 0.4rem !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+    }}
+
+    /* Tags στα multiselect */
+    [data-testid="stSidebar"] span[data-baseweb="tag"] {{
+        background-color: rgba(255,255,255,0.16) !important;
+        color: {TEXT_LIGHT} !important;
+        border-radius: 0.4rem !important;
+    }}
+
+    /* Placeholder text να είναι λίγο πιο ανοιχτό */
+    [data-testid="stSidebar"] ::placeholder {{
+        color: rgba(248,250,252,0.7) !important;
     }}
 
     /* ---------- FOOTER ---------- */
@@ -194,13 +242,13 @@ if selected_periods:
 st.markdown(
     """
     <div class="header-card">
-        <div style="font-size:0.8rem; text-transform:uppercase; color:#666;">
+        <div style="font-size:0.8rem; text-transform:uppercase; color:rgba(248,250,252,0.8);">
             FLL Innovation Project
         </div>
         <div style="font-size:2.1rem; font-weight:700; margin-bottom:0.25rem;">
             AncientVisionFLL – Archaeology Dashboard
         </div>
-        <div style="color:#444;">
+        <div style="color:rgba(248,250,252,0.85);">
             Ψηφιακό εργαλείο για καταγραφή & ανάλυση αρχαιολογικών ευρημάτων.
         </div>
     </div>
@@ -216,23 +264,6 @@ periods_count = filtered["period"].nunique() if not filtered.empty else 0
 
 st.markdown(
     """
-    <style>
-    .kpi-row {display:flex; gap:1rem; margin-bottom:1rem;}
-    .kpi-card {
-        flex:1;
-        padding:1rem;
-        border-radius:0.6rem;
-        color:#fff;
-        font-weight:600;
-        box-shadow:0 2px 6px rgba(0,0,0,0.22);
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    f"""
     <div class="kpi-row">
         <div class="kpi-card" style="background:#007bff;">
             Σύνολο ευρημάτων<br><span style="font-size:1.6rem;">{total}</span>
@@ -244,7 +275,7 @@ st.markdown(
             Διαφορετικές περίοδοι<br><span style="font-size:1.6rem;">{periods_count}</span>
         </div>
     </div>
-    """,
+    """.format(total=total, sites=sites, periods_count=periods_count),
     unsafe_allow_html=True
 )
 
