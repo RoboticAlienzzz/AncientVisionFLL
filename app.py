@@ -305,10 +305,19 @@ else:
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ====== Κρύβουμε μόνο το footer (κρατάμε menu / header) ======
+# ====== Κρύβουμε top toolbar & footer, κρατάμε sidebar / σελίδες ======
 st.markdown(
     """
     <style>
-    footer {visibility: hidden;}
+    /* κρύψε την πάνω μπάρα με Share / GitHub / Edit */
+    div[data-testid="stToolbar"] {
+        display: none !important;
+    }
+
+    /* κράτα το sidebar κανονικά, αλλά κρύψε μόνο το footer */
+    footer {
+        visibility: hidden;
+    }
     </style>
     """,
     unsafe_allow_html=True
