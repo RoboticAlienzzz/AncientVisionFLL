@@ -134,6 +134,7 @@ st.markdown(
         padding: 1.2rem 1.4rem;
         box-shadow: 0 2px 10px rgba(0,0,0,0.25);
         margin-bottom: 1rem;
+        margin-top: 1.5rem;      /* 👉 λίγο κενό από το πάνω header bar */
         color: #111827;
     }
     .big-title {
@@ -195,7 +196,7 @@ st.markdown(
 
     /* Λίγο μικρότερο padding για να θυμίζει web app */
     .block-container {
-        padding-top: 1.2rem;
+        padding-top: 0.5rem;
         padding-bottom: 1.2rem;
     }
     </style>
@@ -271,7 +272,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown("---")
+# (είχαμε ένα st.markdown("---") εδώ – το αφαιρέσαμε ώστε να φύγει η λευκή μπάρα)
 
 # ====== GALLERY CARD (πρόσφατα ευρήματα) ======
 st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -305,8 +306,6 @@ else:
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ====== Κρύβουμε μόνο το footer (κρατάμε menu / header) ======
-# ====== Κρύβουμε top toolbar & footer, κρατάμε sidebar / σελίδες ======
-# ====== Κρύβουμε μόνο το footer (κρατάμε πλήρως τη μπάρα & τα κουμπιά) ======
 st.markdown(
     """
     <style>
