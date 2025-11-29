@@ -304,21 +304,11 @@ else:
     st.info("Δεν υπάρχουν ευρήματα ακόμη. Καταχώρισε το πρώτο από τη σελίδα ‘New Finding’.")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ====== Κρύβουμε Streamlit logo, menu, footer ======
+# ====== Κρύβουμε μόνο το footer (κρατάμε menu / header) ======
 st.markdown(
     """
     <style>
-    /* κρύβουμε menu / header / footer / toolbar σε όλες τις συσκευές */
-    #MainMenu {display: none !important;}
-    header {display: none !important;}
-    footer {display: none !important;}
-    div[data-testid="stToolbar"] {display: none !important;}
-
-    /* σε περίπτωση που εμφανίζεται ειδικό badge (mobile) */
-    .viewerBadge_container__1QSob {display: none !important;}
-
-    /* generic: κρύψε οποιοδήποτε link δείχνει προς streamlit.io */
-    a[href*="streamlit.io"] {display: none !important;}
+    footer {visibility: hidden;}
     </style>
     """,
     unsafe_allow_html=True
