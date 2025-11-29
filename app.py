@@ -134,7 +134,7 @@ st.markdown(
         padding: 1.2rem 1.4rem;
         box-shadow: 0 2px 10px rgba(0,0,0,0.25);
         margin-bottom: 1rem;
-        margin-top: 1.5rem;      /* 👉 λίγο κενό από το πάνω header bar */
+        margin-top: 1.5rem;      /* κενό από το πάνω header bar */
         color: #111827;
     }
     .big-title {
@@ -183,16 +183,6 @@ st.markdown(
     .kpi-blue   { background: #007bff; }
     .kpi-teal   { background: #17a2b8; }
     .kpi-orange { background: #fd7e14; }
-
-    /* Generic card (για gallery) */
-    .card {
-        background-color: #ffffff;
-        border-radius: 0.8rem;
-        padding: 1rem 1.2rem;
-        box-shadow: 0 1px 6px rgba(0,0,0,0.2);
-        margin-bottom: 1rem;
-        color: #111827;
-    }
 
     /* Λίγο μικρότερο padding για να θυμίζει web app */
     .block-container {
@@ -272,10 +262,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# (είχαμε ένα st.markdown("---") εδώ – το αφαιρέσαμε ώστε να φύγει η λευκή μπάρα)
-
-# ====== GALLERY CARD (πρόσφατα ευρήματα) ======
-st.markdown('<div class="card">', unsafe_allow_html=True)
+# ====== GALLERY – Πρόσφατα ευρήματα (χωρίς λευκό card) ======
 st.markdown("### 📸 Πρόσφατα ευρήματα")
 
 if not filtered.empty:
@@ -288,7 +275,10 @@ if not filtered.empty:
     ]
 
     if rows.empty:
-        st.info("Δεν υπάρχουν φωτογραφίες ακόμη. Καταχώρισε ένα νέο εύρημα από τη σελίδα ‘New Finding’.")
+        st.info(
+            "Δεν υπάρχουν φωτογραφίες ακόμη. "
+            "Καταχώρισε ένα νέο εύρημα από τη σελίδα ‘New Finding’."
+        )
     else:
         cols = st.columns(4)
         max_photos = min(8, len(rows))
@@ -296,14 +286,17 @@ if not filtered.empty:
             col = cols[idx % 4]
             with col:
                 img = row["image_bytes"] if row["image_bytes"] not in [None, b""] else row["image_url"]
+                caption = f"{row['coin_name']}"
                 st.image(
                     img,
-                    caption=f'{row["coin_name"]}',
+                    caption=caption,
                     use_column_width=True
                 )
 else:
-    st.info("Δεν υπάρχουν ευρήματα ακόμη. Καταχώρισε το πρώτο από τη σελίδα ‘New Finding’.")
-st.markdown('</div>', unsafe_allow_html=True)
+    st.info(
+        "Δεν υπάρχουν ευρήματα ακόμη. "
+        "Καταχώρισε το πρώτο από τη σελίδα ‘New Finding’."
+    )
 
 # ====== Κρύβουμε μόνο το footer (κρατάμε menu / header) ======
 st.markdown(
