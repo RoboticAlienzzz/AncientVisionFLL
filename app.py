@@ -161,78 +161,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- CSS για TIMELINE "Πρόσφατα ευρήματα" ----------
-st.markdown(
-    """
-    <style>
-    .av-timeline {
-        margin-top: 0.6rem;
-        border-left: 2px solid rgba(148,163,184,0.45);
-        padding-left: 1.4rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.9rem;
-    }
-
-    .av-timeline-item {
-        position: relative;
-        padding-left: 0.2rem;
-    }
-
-    .av-timeline-dot {
-        position: absolute;
-        left: -1.55rem;
-        top: 0.55rem;
-        width: 11px;
-        height: 11px;
-        border-radius: 999px;
-        background: #38bdf8;
-        box-shadow: 0 0 0 4px rgba(56,189,248,0.25);
-    }
-
-    .av-timeline-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 0.4rem;
-        margin-bottom: 0.1rem;
-    }
-
-    .av-timeline-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #e5e7eb;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .av-timeline-date {
-        font-size: 0.8rem;
-        color: #9ca3af;
-        white-space: nowrap;
-    }
-
-    .av-timeline-meta {
-        font-size: 0.8rem;
-        color: #cbd5f5;
-        opacity: 0.9;
-    }
-
-    .av-timeline-meta span.badge {
-        display: inline-block;
-        font-size: 0.7rem;
-        padding: 0.08rem 0.45rem;
-        border-radius: 999px;
-        margin-right: 0.25rem;
-        background-color: rgba(148,163,184,0.2);
-        border: 1px solid rgba(148,163,184,0.45);
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 # --------- Splash Screen ΜΕ LOGO ----------
 if "splash_done" not in st.session_state:
     st.markdown(
@@ -383,7 +311,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- TIMELINE ΠΡΟΣΦΑΤΩΝ ΕΥΡΗΜΑΤΩΝ ----------
+# --------- ΠΡΟΣΦΑΤΑ ΕΥΡΗΜΑΤΑ – ΑΠΛΗ, ΟΜΟΡΦΗ "ΡΟΗ" ----------
 st.markdown("### 🧬 Ροή πρόσφατων ευρημάτων")
 
 if findings.empty:
@@ -395,22 +323,12 @@ else:
     else:
         recent = recent.sort_values("timestamp", ascending=False).head(8)
 
-        # χρώματα για την κουκκίδα ανά τύπο
-        type_colors = {
-            "coin": "#38bdf8",   # γαλάζιο
-            "sherd": "#a855f7",  # μωβ
-            "other": "#f97316",  # πορτοκαλί
-        }
-
-        html = '<div class="av-timeline">'
         for _, row in recent.iterrows():
             title = (row.get("coin_name") or "Untitled finding").strip()
             site = (row.get("site_name") or "Unknown site").strip()
             period = (row.get("period") or "Unknown period").strip()
             t = (row.get("type") or "finding").lower().strip()
             type_label = t.capitalize()
-
-            color = type_colors.get(t, "#e5e7eb")
 
             ts = row.get("timestamp", "")
             try:
@@ -424,23 +342,10 @@ else:
             except Exception:
                 date_str = str(ts)[:10]
 
-            html += f"""
-            <div class="av-timeline-item">
-                <div class="av-timeline-dot"
-                     style="background:{color}; box-shadow:0 0 0 4px {color}33;"></div>
-                <div class="av-timeline-header">
-                    <div class="av-timeline-title">{title}</div>
-                    <div class="av-timeline-date">{date_str}</div>
-                </div>
-                <div class="av-timeline-meta">
-                    <span class="badge">{type_label}</span>
-                    <span class="badge">{period}</span>
-                </div>
-                <div class="av-timeline-meta">
-                    📍 {site}
-                </div>
-            </div>
-            """
-
-        html += "</div>"
-        st.markdown(html, unsafe_allow_html=True)
+            with st.container():
+                st.markdown(
+                    f"**{date_str}** · **{title}**  \n"
+                    f"*{type_label} · {period}*"
+                )
+                st.markdown(f"📍 {site}")
+                st.markdown("---")
