@@ -167,7 +167,7 @@ st.markdown(
     }
 
     .av-card {
-        background: rgba(15,23,42,0.96); /* πολύ σκούρο μπλε */
+        background: rgba(15,23,42,0.96);
         border-radius: 18px;
         padding: 0.9rem 1rem 1rem 1rem;
         box-shadow: 0 10px 25px rgba(0,0,0,0.35);
@@ -230,7 +230,6 @@ st.markdown(
         width: 1rem;
     }
 
-    /* Η περιοχή των μεταδεδομένων χωρίζεται με λεπτή γραμμή */
     .av-divider {
         height: 1px;
         background: linear-gradient(to right, transparent, rgba(148,163,184,0.6), transparent);
@@ -272,7 +271,7 @@ if "splash_done" not in st.session_state:
     with col2:
         st.image("logo.png", use_column_width=True)
         st.markdown('<div class="splash-title">AncientVision</div>', unsafe_allow_html=True)
-        st.markmarkdown(
+        st.markdown(
             '<div class="splash-subtitle">Φόρτωση του συστήματος...</div>',
             unsafe_allow_html=True,
         )
