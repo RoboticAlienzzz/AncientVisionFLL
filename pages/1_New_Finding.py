@@ -4,9 +4,9 @@ from firebase_admin import credentials, firestore
 from datetime import datetime
 
 # ------------------------- COLORS -------------------------
-BG_MAIN = "#2e3a47"      # ίδιο με app.py
+BG_MAIN = "#2e3a47"
 BG_SIDEBAR = "#384655"
-CARD_COLOR = "#3f4a5b"   # χρώμα από την εικόνα
+CARD_COLOR = "#3f4a5b"
 TEXT_LIGHT = "#f8fafc"
 
 # --------- Firebase init ----------
@@ -20,7 +20,7 @@ db = firestore.client()
 # --------- Page config ----------
 st.set_page_config(page_title="New Finding", page_icon="➕", layout="centered")
 
-# --------- GLOBAL STYLE (ίδιο theme με app.py) ----------
+# --------- GLOBAL STYLE ----------
 st.markdown(
     f"""
     <style>
@@ -39,32 +39,47 @@ st.markdown(
     div[data-testid="stToolbar"] {{
         background-color: {BG_MAIN} !important;
         color: {TEXT_LIGHT} !important;
-        border: none !important;
     }}
     [data-testid="stSidebar"] {{
         background-color: {BG_SIDEBAR} !important;
     }}
-    [data-testid="stSidebar"] * {{
-        color: {TEXT_LIGHT} !important;
-    }}
     .block-container {{
         background-color: transparent !important;
-        padding-top: 0.8rem;
+        padding-top: 1rem;
         padding-bottom: 1.5rem;
     }}
 
-    /* Λίγο πιο όμορφα inputs στη φόρμα */
-    .stTextInput > div > div > input,
+    /* Λευκά inputs με μαύρο κείμενο */
+    .stTextInput input,
     .stNumberInput input,
     .stTextArea textarea {{
-        background-color: #ffffff !important;
-        color: #111 !important;
-        border-radius: 0.4rem !important;
-        border: 1px solid rgba(0,0,0,0.25) !important;
+        background-color: white !important;
+        color: black !important;
     }}
 
-    /* Κρύβουμε footer */
-    footer {{visibility: hidden !important;}}
+    footer {{visibility:hidden !important;}}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --------- ΛΕΥΚΟ ΚΕΙΜΕΝΟ ----------
+st.markdown(
+    f"""
+    <style>
+    h1, h2, h3, h4, h5, h6,
+    p, span, div, label {{
+        color: {TEXT_LIGHT} !important;
+    }}
+    [data-testid="stSidebar"] * {{
+        color: {TEXT_LIGHT} !important;
+    }}
+    ::placeholder {{
+        color: rgba(255,255,255,0.6) !important;
+    }}
+    .stAlert p {{
+        color: black !important;
+    }}
     </style>
     """,
     unsafe_allow_html=True
@@ -74,7 +89,7 @@ st.markdown(
 st.markdown("## ➕ Καταχώριση νέου αρχαιολογικού ευρήματος")
 st.write(
     "Συμπλήρωσε τα στοιχεία του ευρήματος. "
-    "**Προσωρινά οι φωτογραφίες δεν αποθηκεύονται** – κρατάμε μόνο τα δεδομένα."
+    "Προσωρινά οι φωτογραφίες **δεν αποθηκεύονται** στη βάση."
 )
 
 with st.form("new_finding_form"):
@@ -83,29 +98,24 @@ with st.form("new_finding_form"):
     with col_left:
         coin_name = st.text_input("Όνομα / περιγραφή ευρήματος*")
         obj_type = st.selectbox("Τύπος", ["coin", "sherd", "other"])
-        period = st.text_input("Περίοδος (π.χ. Classical, Hellenistic)")
+        period = st.text_input("Περίοδος (π.χ. Hellenistic)")
         site_name = st.text_input("Αρχαιολογικός χώρος*")
 
     with col_right:
-        latitude = st.number_input("Latitude (γεωγραφικό πλάτος)", format="%.6f")
-        longitude = st.number_input("Longitude (γεωγραφικό μήκος)", format="%.6f")
+        latitude = st.number_input("Latitude", format="%.6f")
+        longitude = st.number_input("Longitude", format="%.6f")
 
-        # UI για κάμερα / αρχείο αλλά δεν αποθηκεύουμε την εικόνα
         capture_mode = st.radio(
-            "Φωτογραφία ευρήματος (προαιρετική – δεν αποθηκεύεται προς το παρόν)",
-            ["📷 Χρήση κάμερας", "📁 Επιλογή από αρχείο"],
+            "Φωτογραφία (δεν αποθηκεύεται ακόμη)",
+            ["📷 Χρήση κάμερας", "📁 Από αρχείο"]
         )
 
         if capture_mode.startswith("📷"):
-            st.camera_input("Βγάλε φωτογραφία ευρήματος")
+            st.camera_input("Βγάλε φωτογραφία")
         else:
-            st.file_uploader(
-                "Επέλεξε φωτογραφία από τη συσκευή",
-                type=["jpg", "jpeg", "png"]
-            )
+            st.file_uploader("Επιλογή εικόνας", type=["jpg", "jpeg", "png"])
 
-    notes = st.text_area("Σημειώσεις για αρχαιολόγους (προαιρετικό)", height=100)
-
+    notes = st.text_area("Σημειώσεις για αρχαιολόγους", height=100)
     submitted = st.form_submit_button("💾 Αποθήκευση ευρήματος")
 
 if submitted:
@@ -119,7 +129,7 @@ if submitted:
             "site_name": site_name,
             "latitude": float(latitude) if latitude else None,
             "longitude": float(longitude) if longitude else None,
-            "image_bytes": None,   # δεν αποθηκεύουμε εικόνα
+            "image_bytes": None,
             "image_url": "",
             "notes": notes,
             "timestamp": datetime.now()
