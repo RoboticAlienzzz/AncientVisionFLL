@@ -7,15 +7,13 @@ from firebase_admin import credentials, firestore
 # ------------------------- COLORS -------------------------
 BG_MAIN = "#2e3a47"      # background για όλες τις σελίδες + header bar
 BG_SIDEBAR = "#384655"   # sidebar
-CARD_COLOR = "#3f4a5b"   # χρώμα από την εικόνα (header card + φίλτρα)
+CARD_COLOR = "#3f4a5b"   # header card + φίλτρα
 TEXT_LIGHT = "#f8fafc"
 
 # --------- Firebase init (SAFE για Streamlit reruns) ----------
 try:
-    # Αν υπάρχει ήδη Firebase app, χρησιμοποιούμε αυτό
     firebase_admin.get_app()
 except ValueError:
-    # Αν ΔΕΝ υπάρχει, το δημιουργούμε
     firebase_config = dict(st.secrets["firebase_key"])
     cred = credentials.Certificate(firebase_config)
     firebase_admin.initialize_app(cred)
@@ -29,16 +27,15 @@ st.set_page_config(
     page_icon="🏺",
 )
 
-# --------- SIDEBAR LOGO (πάνω από τα ονόματα σελίδων) ----------
+# --------- SIDEBAR LOGO ----------
 with st.sidebar:
     st.image("logo.png", use_column_width=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
-# --------- GLOBAL STYLE ----------
+# --------- GLOBAL STYLE (background, sidebar, header κλπ) ----------
 st.markdown(
     f"""
     <style>
-    /* GLOBAL BACKGROUND */
     .stApp {{
         background-color: {BG_MAIN} !important;
         background: {BG_MAIN} !important;
@@ -52,14 +49,12 @@ st.markdown(
         color: {TEXT_LIGHT} !important;
     }}
 
-    /* HEADER BAR */
     div[data-testid="stToolbar"] {{
         background-color: {BG_MAIN} !important;
         color: {TEXT_LIGHT} !important;
         border: none !important;
     }}
 
-    /* SIDEBAR BACKGROUND */
     section[data-testid="stSidebar"] {{
         background-color: {BG_SIDEBAR} !important;
     }}
@@ -70,18 +65,16 @@ st.markdown(
         padding-bottom: 1.5rem;
     }}
 
-    /* HEADER CARD */
     .header-card {{
         background-color: {CARD_COLOR} !important;
         color: {TEXT_LIGHT} !important;
         border-radius: 0.8rem;
         padding: 1.4rem;
-        margin-top: 3rem;  /* πιο κάτω για να μην ακουμπάει το header bar */
+        margin-top: 3rem;
         margin-bottom: 1rem;
         box-shadow: 0 2px 12px rgba(0,0,0,0.35);
     }}
 
-    /* KPI ROW */
     .kpi-row {{
         display:flex;
         gap:1rem;
@@ -96,7 +89,6 @@ st.markdown(
         box-shadow:0 2px 6px rgba(0,0,0,0.22);
     }}
 
-    /* ΦΙΛΤΡΑ SIDEBAR ΜΕ CARD_COLOR */
     section[data-testid="stSidebar"] input[type="text"],
     section[data-testid="stSidebar"] input[type="number"],
     section[data-testid="stSidebar"] textarea {{
@@ -119,7 +111,6 @@ st.markdown(
         border-radius: 0.4rem !important;
     }}
 
-    /* Μικρότερο font στο header "Φίλτρα" */
     section[data-testid="stSidebar"] h1 {{
         font-size: 1.1rem !important;
         font-weight: 600 !important;
@@ -127,84 +118,6 @@ st.markdown(
     }}
 
     footer {{visibility: hidden !important;}}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# --------- CARD STYLE ΓΙΑ "Πρόσφατα ευρήματα" ----------
-st.markdown(
-    """
-    <style>
-    .finding-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1.4rem;
-        margin-top: 0.8rem;
-    }
-    .finding-card {
-        background: #f9fafb;
-        border-radius: 18px;
-        overflow: hidden;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.22);
-        color: #111827 !important;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, -apple-system, "SF Pro Text", sans-serif;
-    }
-    .finding-card * {
-        color: #111827 !important;
-    }
-    .finding-image {
-        height: 160px;
-        background: linear-gradient(135deg, #dbeafe, #a5f3fc, #cffafe);
-        background-size: cover;
-        background-position: center;
-    }
-    .finding-card-body {
-        padding: 0.85rem 1rem 0.95rem 1rem;
-    }
-    .finding-badges {
-        position: relative;
-        margin-top: 0.7rem;
-        margin-left: 0.8rem;
-        margin-right: 0.8rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .finding-badge {
-        font-size: 0.7rem;
-        padding: 0.18rem 0.55rem;
-        border-radius: 999px;
-        font-weight: 600;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-    }
-    .badge-type {
-        background: #fee2e2;
-        color: #b91c1c !important;
-    }
-    .badge-status {
-        background: #dcfce7;
-        color: #166534 !important;
-    }
-    .finding-title {
-        font-size: 1.0rem;
-        font-weight: 700;
-        margin-bottom: 0.35rem;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }
-    .finding-meta {
-        font-size: 0.8rem;
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        margin-top: 0.16rem;
-        opacity: 0.9;
-    }
-    .finding-meta span.emoji {
-        width: 1rem;
-    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -227,7 +140,6 @@ st.markdown(
         color: rgba(255,255,255,0.6) !important;
     }}
 
-    /* Inputs παραμένουν readable */
     .stTextInput input,
     .stNumberInput input,
     .stTextArea textarea {{
@@ -237,6 +149,99 @@ st.markdown(
 
     .stAlert p {{
         color: black !important;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# --------- CARD STYLE ΓΙΑ "Πρόσφατα ευρήματα" (τύπου screenshot) ----------
+st.markdown(
+    """
+    <style>
+    .finding-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.6rem;
+        margin-top: 0.8rem;
+    }
+
+    .finding-card {
+        background: #fdfdfd;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, -apple-system, "SF Pro Text", sans-serif;
+    }
+
+    .finding-top {
+        position: relative;
+        height: 180px;
+        background: linear-gradient(135deg, #dbeafe, #a5f3fc, #cffafe);
+        background-size: cover;
+        background-position: center;
+    }
+
+    .finding-top .badge-type,
+    .finding-top .badge-status {
+        position: absolute;
+        top: 10px;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.7rem;
+        border-radius: 999px;
+        font-weight: 600;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+
+    .finding-top .badge-type {
+        left: 10px;
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .finding-top .badge-status {
+        right: 10px;
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .finding-bottom {
+        padding: 0.85rem 1rem 1rem 1rem;
+        background: #ffffff;
+    }
+
+    .finding-title {
+        font-size: 1.0rem;
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #111827;
+    }
+
+    .finding-subtitle {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-bottom: 0.4rem;
+    }
+
+    .finding-meta-row {
+        font-size: 0.8rem;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-top: 0.18rem;
+    }
+
+    .finding-meta-row span.emoji {
+        width: 1rem;
+    }
+
+    /* ΠΑΝΤΑ μαύρο κείμενο ΜΕΣΑ στις κάρτες (override του λευκού) */
+    .finding-card *, .finding-card span, .finding-card div {{
+        color: #111827 !important;
     }}
     </style>
     """,
@@ -399,7 +404,6 @@ st.markdown("### 📸 Πρόσφατα ευρήματα")
 if findings.empty:
     st.info("Δεν υπάρχουν ευρήματα ακόμη.")
 else:
-    # Τα πιο πρόσφατα 8 ευρήματα
     rows = filtered.copy()
     rows = rows.sort_values("timestamp", ascending=False).head(8)
 
@@ -409,13 +413,14 @@ else:
         cards_html = '<div class="finding-grid">'
 
         for _, row in rows.iterrows():
-            coin_name = row.get("coin_name", "Άγνωστο εύρημα")
-            type_label = (row.get("type", "") or "").capitalize() or "Finding"
-            period = row.get("period", "Άγνωστη περίοδος")
-            site = row.get("site_name", "Άγνωστος χώρος")
+            # Ασφαλή strings με ωραία defaults
+            coin_name = (row.get("coin_name") or "Untitled finding").strip()
+            period = (row.get("period") or "Unknown period").strip()
+            site = (row.get("site_name") or "Unknown site").strip()
+            type_label = (row.get("type") or "Finding").capitalize().strip()
             img_url = (row.get("image_url", "") or "").strip()
 
-            # Μορφοποίηση ημερομηνίας
+            # Ημερομηνία
             ts = row.get("timestamp", "")
             date_str = ""
             try:
@@ -431,28 +436,24 @@ else:
 
             # Background εικόνας (αν υπάρχει URL)
             if img_url:
-                bg_style = f"background-image: url('{img_url}');"
+                top_style = f"background-image: url('{img_url}');"
             else:
-                bg_style = ""  # θα φαίνεται μόνο το gradient
+                top_style = ""  # gradient μόνο
 
             cards_html += f"""
             <div class="finding-card">
-                <div class="finding-image" style="{bg_style}"></div>
-                <div class="finding-badges">
-                    <span class="finding-badge badge-type">{type_label}</span>
-                    <span class="finding-badge badge-status">Logged</span>
+                <div class="finding-top" style="{top_style}">
+                    <span class="badge-type">{type_label}</span>
+                    <span class="badge-status">Good</span>
                 </div>
-                <div class="finding-card-body">
+                <div class="finding-bottom">
                     <div class="finding-title">{coin_name}</div>
-                    <div class="finding-meta">
-                        <span class="emoji">🏷️</span>
-                        <span>{period}</span>
-                    </div>
-                    <div class="finding-meta">
+                    <div class="finding-subtitle">{period}</div>
+                    <div class="finding-meta-row">
                         <span class="emoji">📍</span>
                         <span>{site}</span>
                     </div>
-                    <div class="finding-meta">
+                    <div class="finding-meta-row">
                         <span class="emoji">📅</span>
                         <span>{date_str}</span>
                     </div>
