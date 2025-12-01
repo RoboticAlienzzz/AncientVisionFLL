@@ -25,9 +25,10 @@ st.set_page_config(
     page_icon="🏺",
 )
 
-# --------- SIDEBAR LOGO (OPTION A) ----------
-# Βεβαιώσου ότι υπάρχει αρχείο logo.png στο ίδιο επίπεδο με το app.py
-st.sidebar.image("logo.png", use_column_width=True)
+# --------- SIDEBAR LOGO (πάνω από τα ονόματα σελίδων) ----------
+with st.sidebar:
+    st.image("logo.png", use_column_width=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
 # --------- GLOBAL STYLE ----------
 st.markdown(
@@ -160,7 +161,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- Splash Screen ΜΕ LOGO (OPTION C) ----------
+# --------- Splash Screen ΜΕ LOGO (Option C) ----------
 if "splash_done" not in st.session_state:
     st.markdown(
         f"""
@@ -240,7 +241,7 @@ def load_findings():
 findings = load_findings()
 
 # --------- Sidebar Filters ----------
-st.sidebar.header("Φίλτρα")  # χωρίς emoji
+st.sidebar.header("Φίλτρα")
 
 selected_types = st.sidebar.multiselect(
     "Τύπος ευρήματος",
