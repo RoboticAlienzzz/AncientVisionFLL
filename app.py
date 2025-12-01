@@ -5,11 +5,10 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # ------------------------- COLORS -------------------------
-BG_MAIN = "#2e3a47"      # background for όλες τις σελίδες + header bar
-BG_SIDEBAR = "#384655"   # background για sidebar
-CARD_COLOR = "#3f4a5b"   # χρώμα από την εικόνα για header card + φίλτρα
+BG_MAIN = "#2e3a47"      # background για όλες τις σελίδες + header bar
+BG_SIDEBAR = "#384655"   # sidebar
+CARD_COLOR = "#3f4a5b"   # χρώμα από την εικόνα (header card + φίλτρα)
 TEXT_LIGHT = "#f8fafc"
-
 
 # --------- Firebase init ----------
 if not firebase_admin._apps:
@@ -19,71 +18,61 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-
 # --------- Page config ----------
 st.set_page_config(
-    page_title="AncientVisionFLL – Dashboard",
+    page_title="AncientVision – Dashboard",
     layout="wide",
     page_icon="🏺"
 )
-
 
 # --------- GLOBAL STYLE ----------
 st.markdown(
     f"""
     <style>
-
-    /* ---------- GLOBAL BACKGROUND ---------- */
+    /* GLOBAL BACKGROUND */
     .stApp {{
         background-color: {BG_MAIN} !important;
         background: {BG_MAIN} !important;
         color: {TEXT_LIGHT} !important;
     }}
-
     html, body {{
         background-color: {BG_MAIN} !important;
     }}
-
     .main {{
         background-color: {BG_MAIN} !important;
         color: {TEXT_LIGHT} !important;
     }}
 
-    /* ---------- HEADER BAR (top menu) ---------- */
+    /* HEADER BAR */
     div[data-testid="stToolbar"] {{
         background-color: {BG_MAIN} !important;
         color: {TEXT_LIGHT} !important;
         border: none !important;
     }}
 
-    /* ---------- SIDEBAR ---------- */
+    /* SIDEBAR */
     [data-testid="stSidebar"] {{
         background-color: {BG_SIDEBAR} !important;
     }}
 
-    [data-testid="stSidebar"] * {{
-        color: {TEXT_LIGHT} !important;
-    }}
-
-    /* Βασικό container της σελίδας */
     .block-container {{
         background-color: transparent !important;
         padding-top: 0.5rem;
         padding-bottom: 1.5rem;
     }}
 
-    /* ---------- HEADER CARD (AncientVisionFLL – Archaeology Dashboard) ---------- */
+    /* HEADER CARD */
     .header-card {{
         background-color: {CARD_COLOR} !important;
         color: {TEXT_LIGHT} !important;
         border-radius: 0.8rem;
         padding: 1.4rem;
-        margin-top: 2.6rem;      /* 👉 πιο κάτω ώστε να μη χτυπάει στο header bar */
+        margin-top: 3rem;  /* πιο κάτω για να μην ακουμπάει το header bar */
         margin-bottom: 1rem;
         box-shadow: 0 2px 12px rgba(0,0,0,0.35);
     }}
 
-    /* ---------- KPI ROW ---------- */
+    /* KPI ROW */
     .kpi-row {{
         display:flex;
         gap:1rem;
@@ -98,9 +87,7 @@ st.markdown(
         box-shadow:0 2px 6px rgba(0,0,0,0.22);
     }}
 
-    /* ---------- ΦΙΛΤΡΑ SIDEBAR ΜΕ CARD_COLOR ---------- */
-
-    /* Text & number inputs */
+    /* ΦΙΛΤΡΑ SIDEBAR ΜΕ CARD_COLOR */
     [data-testid="stSidebar"] input[type="text"],
     [data-testid="stSidebar"] input[type="number"],
     [data-testid="stSidebar"] textarea {{
@@ -110,7 +97,6 @@ st.markdown(
         border: 1px solid rgba(255,255,255,0.15) !important;
     }}
 
-    /* Select / multiselect "κουτάκια" */
     [data-testid="stSidebar"] div[data-baseweb="select"] > div {{
         background-color: {CARD_COLOR} !important;
         color: {TEXT_LIGHT} !important;
@@ -118,26 +104,49 @@ st.markdown(
         border: 1px solid rgba(255,255,255,0.15) !important;
     }}
 
-    /* Tags στα multiselect */
     [data-testid="stSidebar"] span[data-baseweb="tag"] {{
         background-color: rgba(255,255,255,0.16) !important;
         color: {TEXT_LIGHT} !important;
         border-radius: 0.4rem !important;
     }}
 
-    /* Placeholder text να είναι λίγο πιο ανοιχτό */
-    [data-testid="stSidebar"] ::placeholder {{
-        color: rgba(248,250,252,0.7) !important;
-    }}
-
-    /* ---------- FOOTER ---------- */
     footer {{visibility: hidden !important;}}
-
     </style>
     """,
     unsafe_allow_html=True
 )
 
+# --------- ΛΕΥΚΑ ΓΡΑΜΜΑΤΑ ΠΑΝΤΟΥ (εκτός inputs) ----------
+st.markdown(
+    f"""
+    <style>
+    h1, h2, h3, h4, h5, h6,
+    p, span, div, label {{
+        color: {TEXT_LIGHT} !important;
+    }}
+
+    [data-testid="stSidebar"] * {{
+        color: {TEXT_LIGHT} !important;
+    }}
+
+    ::placeholder {{
+        color: rgba(255,255,255,0.6) !important;
+    }}
+
+    .stTextInput input,
+    .stNumberInput input,
+    .stTextArea textarea {{
+        color: black !important;
+        background-color: white !important;
+    }}
+
+    .stAlert p {{
+        color: black !important;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # --------- Splash Screen ----------
 if "splash_done" not in st.session_state:
@@ -166,7 +175,7 @@ if "splash_done" not in st.session_state:
         </style>
 
         <div class="splash-box">
-            <div class="splash-title">AncientVisionFLL</div>
+            <div class="splash-title">AncientVision</div>
             <div class="splash-subtitle">Φόρτωση του συστήματος...</div>
         </div>
         """,
@@ -181,8 +190,7 @@ if "splash_done" not in st.session_state:
     st.session_state["splash_done"] = True
     st.rerun()
 
-
-# --------- Load Firestore Data ----------
+# --------- Φόρτωση δεδομένων ----------
 @st.cache_data
 def load_findings():
     docs = (
@@ -208,10 +216,9 @@ def load_findings():
         })
     return pd.DataFrame(data)
 
-
-# --------- Sidebar Filters ----------
 findings = load_findings()
 
+# --------- Sidebar Filters ----------
 st.sidebar.header("🔎 Φίλτρα")
 
 selected_types = st.sidebar.multiselect(
@@ -237,25 +244,23 @@ if selected_types:
 if selected_periods:
     filtered = filtered[filtered["period"].isin(selected_periods)]
 
-
 # --------- HEADER CARD ----------
 st.markdown(
-    """
+    f"""
     <div class="header-card">
-        <div style="font-size:0.8rem; text-transform:uppercase; color:rgba(248,250,252,0.8);">
-            FLL Innovation Project
+        <div style="font-size:0.8rem; text-transform:uppercase; opacity:0.85;">
+            ROBOTICALIENZ'S INNOVATION PROJECT
         </div>
-        <div style="font-size:2.1rem; font-weight:700; margin-bottom:0.25rem;">
-            AncientVisionFLL – Archaeology Dashboard
+        <div style="font-size:2.1rem; font-weight:700; margin-top:0.3rem; margin-bottom:0.3rem;">
+            AncientVision – Archaeology Dashboard
         </div>
-        <div style="color:rgba(248,250,252,0.85);">
-            Ψηφιακό εργαλείο για καταγραφή & ανάλυση αρχαιολογικών ευρημάτων.
+        <div style="font-size:1rem; opacity:0.9;">
+            Ψηφιακό εργαλείο για αναγνώριση, καταγραφή & ανάλυση αρχαιολογικών ευρημάτων.
         </div>
     </div>
     """,
     unsafe_allow_html=True
 )
-
 
 # --------- KPI CARDS ----------
 total = len(filtered)
@@ -263,7 +268,7 @@ sites = filtered["site_name"].nunique() if not filtered.empty else 0
 periods_count = filtered["period"].nunique() if not filtered.empty else 0
 
 st.markdown(
-    """
+    f"""
     <div class="kpi-row">
         <div class="kpi-card" style="background:#007bff;">
             Σύνολο ευρημάτων<br><span style="font-size:1.6rem;">{total}</span>
@@ -275,10 +280,9 @@ st.markdown(
             Διαφορετικές περίοδοι<br><span style="font-size:1.6rem;">{periods_count}</span>
         </div>
     </div>
-    """.format(total=total, sites=sites, periods_count=periods_count),
+    """,
     unsafe_allow_html=True
 )
-
 
 # --------- GALLERY ----------
 st.markdown("### 📸 Πρόσφατα ευρήματα")
@@ -291,7 +295,7 @@ if not filtered.empty:
     ]
 
     if rows.empty:
-        st.info("Δεν υπάρχουν εικόνες ακόμη.")
+        st.info("Δεν υπάρχουν φωτογραφίες ακόμη.")
     else:
         cols = st.columns(4)
         for idx, (_, row) in enumerate(rows.head(8).iterrows()):
@@ -300,7 +304,3 @@ if not filtered.empty:
             col.image(img, caption=row["coin_name"], use_column_width=True)
 else:
     st.info("Δεν υπάρχουν ευρήματα ακόμη.")
-
-
-# --------- Hide footer ---------
-st.markdown("<style>footer{visibility:hidden;}</style>", unsafe_allow_html=True)
