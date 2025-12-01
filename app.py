@@ -129,7 +129,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- ΛΕΥΚΑ ΓΡΑΜΜΑΤΑ ΠΑΝΤΟΥ (εκτός inputs) ----------
+# --------- ΛΕΥΚΑ ΓΡΑΜΜΑΤΑ ΠΑΝΤΟΥ + styling για κάρτες ----------
 st.markdown(
     f"""
     <style>
@@ -157,20 +157,20 @@ st.markdown(
         color: black !important;
     }}
 
-    /* Κάρτες για τα πρόσφατα ευρήματα */
+    /* ===== Κάρτες για τα πρόσφατα ευρήματα ===== */
     .av-card {{
         background-color: {CARD_COLOR};
         border-radius: 0.8rem;
-        padding: 0.6rem;
+        padding: 0;
         box-shadow: 0 2px 12px rgba(0,0,0,0.35);
         overflow: hidden;
         margin-bottom: 0.8rem;
     }}
     .av-card img {{
         width: 100%;
+        height: 100%;
         aspect-ratio: 1 / 1;
         object-fit: cover;
-        border-radius: 0.6rem;
         display: block;
     }}
     </style>
