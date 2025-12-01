@@ -29,7 +29,7 @@ st.set_page_config(
 
 # --------- SIDEBAR LOGO ----------
 with st.sidebar:
-    # φρόντισε να έχεις ένα logo.png δίπλα στο app.py
+    # Βεβαιώσου ότι υπάρχει logo.png στο ίδιο folder με το app.py
     st.image("logo.png", use_column_width=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -156,6 +156,19 @@ st.markdown(
     .stAlert p {{
         color: black !important;
     }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# --------- ΛΙΓΟ STYLE ΓΙΑ ΤΟ GALLERY ΕΙΚΟΝΩΝ ----------
+st.markdown(
+    """
+    <style>
+    .av-gallery img {
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -311,41 +324,36 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- ΠΡΟΣΦΑΤΑ ΕΥΡΗΜΑΤΑ – ΑΠΛΗ, ΟΜΟΡΦΗ "ΡΟΗ" ----------
-st.markdown("### 🧬 Ροή πρόσφατων ευρημάτων")
+# --------- GALLERY (Μόνο φωτογραφίες) ----------
+st.markdown("### 📸 Πρόσφατα ευρήματα")
 
 if findings.empty:
-    st.info("Δεν υπάρχουν ευρήματα ακόμη. Καταχώρισε το πρώτο από τη σελίδα ‘New Finding’.")
+    st.info("Δεν υπάρχουν ευρήματα ακόμη.")
 else:
-    recent = filtered.copy()
-    if recent.empty:
-        st.info("Δεν υπάρχουν ευρήματα που να ταιριάζουν με τα επιλεγμένα φίλτρα.")
+    rows = filtered.copy()
+    rows = rows.sort_values("timestamp", ascending=False)
+
+    # Κρατάμε μόνο όσα έχουν εικόνα (bytes ή URL)
+    rows = rows[
+        rows["image_bytes"].notnull() |
+        (rows["image_url"].astype(str) != "")
+    ]
+
+    if rows.empty:
+        st.info("Δεν υπάρχουν φωτογραφίες ακόμη.")
     else:
-        recent = recent.sort_values("timestamp", ascending=False).head(8)
+        st.markdown('<div class="av-gallery">', unsafe_allow_html=True)
 
-        for _, row in recent.iterrows():
-            title = (row.get("coin_name") or "Untitled finding").strip()
-            site = (row.get("site_name") or "Unknown site").strip()
-            period = (row.get("period") or "Unknown period").strip()
-            t = (row.get("type") or "finding").lower().strip()
-            type_label = t.capitalize()
+        cols = st.columns(4)  # 4 φωτογραφίες ανά σειρά
+        max_photos = min(12, len(rows))
 
-            ts = row.get("timestamp", "")
-            try:
-                if hasattr(ts, "to_pydatetime"):
-                    dt = ts.to_pydatetime()
-                    date_str = dt.strftime("%b %d, %Y")
-                elif hasattr(ts, "strftime"):
-                    date_str = ts.strftime("%b %d, %Y")
-                else:
-                    date_str = str(ts)[:10]
-            except Exception:
-                date_str = str(ts)[:10]
-
-            with st.container():
-                st.markdown(
-                    f"**{date_str}** · **{title}**  \n"
-                    f"*{type_label} · {period}*"
+        for idx, (_, row) in enumerate(rows.head(max_photos).iterrows()):
+            col = cols[idx % 4]
+            with col:
+                img = row["image_url"] if row.get("image_url") else row.get("image_bytes")
+                st.image(
+                    img,
+                    use_column_width=True,
                 )
-                st.markdown(f"📍 {site}")
-                st.markdown("---")
+
+        st.markdown('</div>', unsafe_allow_html=True)
