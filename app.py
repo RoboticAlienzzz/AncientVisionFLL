@@ -156,41 +156,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- ΑΛΛΑΓΗ ΟΝΟΜΑΤΩΝ ΣΤΟ SIDEBAR NAV (app → Dashboard, Table → Findings) ----------
-st.markdown(
-    """
-    <style>
-    /* Κρύβουμε όλα τα κείμενα των links στο sidebar nav */
-    div[data-testid="stSidebarNav"] li a span {
-        font-size: 0px !important;
-    }
-
-    /* 1ο item: app -> Dashboard */
-    div[data-testid="stSidebarNav"] li:nth-child(1) a span::after {
-        content: "Dashboard";
-        font-size: 1rem !important;
-        color: #f8fafc !important;
-    }
-
-    /* 2ο item: New Finding (το ορίζουμε ρητά) */
-    div[data-testid="stSidebarNav"] li:nth-child(2) a span::after {
-        content: "New Finding";
-        font-size: 1rem !important;
-        color: #f8fafc !important;
-    }
-
-    /* 3ο item: Table and Small Map -> Findings */
-    div[data-testid="stSidebarNav"] li:nth-child(3) a span::after {
-        content: "Findings";
-        font-size: 1rem !important;
-        color: #f8fafc !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# --------- Splash Screen ----------
+# --------- Splash Screen (προαιρετικό, αλλά δουλεύει) ----------
 if "splash_done" not in st.session_state:
     st.markdown(
         f"""
@@ -235,11 +201,17 @@ if "splash_done" not in st.session_state:
 # --------- Φόρτωση δεδομένων ----------
 @st.cache_data
 def load_findings():
-    docs = (
-        db.collection("findings")
-        .order_by("timestamp", direction=firestore.Query.DESCENDING)
-        .stream()
-    )
+    try:
+        docs = (
+            db.collection("findings")
+            .order_by("timestamp", direction=firestore.Query.DESCENDING)
+            .stream()
+        )
+    except Exception as e:
+        # Αν κάτι πάει στραβά με Firebase, δείξε error αντί να "σβήσει" η σελίδα
+        st.error(f"Σφάλμα κατά τη σύνδεση με Firebase: {e}")
+        return pd.DataFrame()
+
     data = []
     for doc in docs:
         d = doc.to_dict()
@@ -272,11 +244,10 @@ selected_types = st.sidebar.multiselect(
     default=["coin", "sherd", "other"],
 )
 
-periods = (
-    sorted(findings["period"].dropna().unique().tolist())
-    if not findings.empty
-    else []
-)
+if not findings.empty:
+    periods = sorted(findings["period"].dropna().unique().tolist())
+else:
+    periods = []
 
 selected_periods = st.sidebar.multiselect(
     "Περίοδος",
@@ -309,9 +280,14 @@ st.markdown(
 )
 
 # --------- KPI CARDS ----------
-total = len(filtered)
-sites = filtered["site_name"].nunique() if not filtered.empty else 0
-periods_count = filtered["period"].nunique() if not filtered.empty else 0
+if findings.empty:
+    total = 0
+    sites = 0
+    periods_count = 0
+else:
+    total = len(filtered)
+    sites = filtered["site_name"].nunique() if not filtered.empty else 0
+    periods_count = filtered["period"].nunique() if not filtered.empty else 0
 
 st.markdown(
     f"""
@@ -333,16 +309,19 @@ st.markdown(
 # --------- GALLERY ----------
 st.markdown("### 📸 Πρόσφατα ευρήματα")
 
-if not filtered.empty:
-    rows = filtered.sort_values("timestamp", ascending=False)
-    rows = rows[
-        rows["image_bytes"].notnull()
-        | (rows["image_url"].astype(str) != "")
+if findings.empty:
+    st.info("Δεν υπάρχουν ευρήματα ακόμη.")
+else:
+    filtered_for_gallery = filtered.copy()
+    filtered_for_gallery = filtered_for_gallery[
+        filtered_for_gallery["image_bytes"].notnull()
+        | (filtered_for_gallery["image_url"].astype(str) != "")
     ]
 
-    if rows.empty:
+    if filtered_for_gallery.empty:
         st.info("Δεν υπάρχουν φωτογραφίες ακόμη.")
     else:
+        rows = filtered_for_gallery.sort_values("timestamp", ascending=False)
         cols = st.columns(4)
         for idx, (_, row) in enumerate(rows.head(8).iterrows()):
             col = cols[idx % 4]
@@ -352,5 +331,3 @@ if not filtered.empty:
                 else row["image_url"]
             )
             col.image(img, caption=row["coin_name"], use_column_width=True)
-else:
-    st.info("Δεν υπάρχουν ευρήματα ακόμη.")
