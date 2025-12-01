@@ -7,7 +7,7 @@ from firebase_admin import credentials, firestore
 # ------------------------- COLORS -------------------------
 BG_MAIN = "#2e3a47"      # background για όλες τις σελίδες + header bar
 BG_SIDEBAR = "#384655"   # sidebar
-CARD_COLOR = "#3f4a5b"   # header card + φίλτρα
+CARD_COLOR = "#3f4a5b"   # header card + κάρτες ευρημάτων
 TEXT_LIGHT = "#f8fafc"
 
 # --------- Firebase init (SAFE για Streamlit reruns) ----------
@@ -156,19 +156,23 @@ st.markdown(
     .stAlert p {{
         color: black !important;
     }}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
-# --------- ΛΙΓΟ STYLE ΓΙΑ ΤΟ GALLERY ΕΙΚΟΝΩΝ ----------
-st.markdown(
-    """
-    <style>
-    .av-gallery img {
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.45);
-    }
+    /* Κάρτες για τα πρόσφατα ευρήματα */
+    .av-card {{
+        background-color: {CARD_COLOR};
+        border-radius: 0.8rem;
+        padding: 0.6rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+        overflow: hidden;
+        margin-bottom: 0.8rem;
+    }}
+    .av-card img {{
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 0.6rem;
+        display: block;
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -324,7 +328,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- GALLERY (Μόνο φωτογραφίες) ----------
+# --------- GALLERY ΩΣ SQUARE CARDS ----------
 st.markdown("### 📸 Πρόσφατα ευρήματα")
 
 if findings.empty:
@@ -342,18 +346,13 @@ else:
     if rows.empty:
         st.info("Δεν υπάρχουν φωτογραφίες ακόμη.")
     else:
-        st.markdown('<div class="av-gallery">', unsafe_allow_html=True)
-
-        cols = st.columns(4)  # 4 φωτογραφίες ανά σειρά
+        cols = st.columns(4)  # 4 κάρτες ανά σειρά
         max_photos = min(12, len(rows))
 
         for idx, (_, row) in enumerate(rows.head(max_photos).iterrows()):
             col = cols[idx % 4]
             with col:
                 img = row["image_url"] if row.get("image_url") else row.get("image_bytes")
-                st.image(
-                    img,
-                    use_column_width=True,
-                )
-
-        st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('<div class="av-card">', unsafe_allow_html=True)
+                st.image(img, use_column_width=True)
+                st.markdown('</div>', unsafe_allow_html=True)
