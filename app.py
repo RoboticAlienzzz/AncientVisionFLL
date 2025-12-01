@@ -25,6 +25,10 @@ st.set_page_config(
     page_icon="🏺",
 )
 
+# --------- SIDEBAR LOGO (OPTION A) ----------
+# Βεβαιώσου ότι υπάρχει αρχείο logo.png στο ίδιο επίπεδο με το app.py
+st.sidebar.image("logo.png", use_column_width=True)
+
 # --------- GLOBAL STYLE ----------
 st.markdown(
     f"""
@@ -156,7 +160,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- Splash Screen (προαιρετικό, αλλά δουλεύει) ----------
+# --------- Splash Screen ΜΕ LOGO (OPTION C) ----------
 if "splash_done" not in st.session_state:
     st.markdown(
         f"""
@@ -183,6 +187,7 @@ if "splash_done" not in st.session_state:
         </style>
 
         <div class="splash-box">
+            <img src="logo.png" style="width:180px; margin-bottom:25px;">
             <div class="splash-title">AncientVision</div>
             <div class="splash-subtitle">Φόρτωση του συστήματος...</div>
         </div>
@@ -208,7 +213,6 @@ def load_findings():
             .stream()
         )
     except Exception as e:
-        # Αν κάτι πάει στραβά με Firebase, δείξε error αντί να "σβήσει" η σελίδα
         st.error(f"Σφάλμα κατά τη σύνδεση με Firebase: {e}")
         return pd.DataFrame()
 
