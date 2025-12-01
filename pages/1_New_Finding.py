@@ -20,6 +20,117 @@ except ValueError:
 
 db = firestore.client()
 
+# ------------------------
+# COLORS (ίδια με app.py)
+# ------------------------
+BG_MAIN = "#2e3a47"      # background για όλες τις σελίδες + header bar
+BG_SIDEBAR = "#384655"   # sidebar
+CARD_COLOR = "#3f4a5b"   # κάρτες / πεδία
+TEXT_LIGHT = "#f8fafc"
+
+# ------------------------
+# GLOBAL STYLE (ίδιο με app.py)
+# ------------------------
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-color: {BG_MAIN} !important;
+        background: {BG_MAIN} !important;
+        color: {TEXT_LIGHT} !important;
+    }}
+    html, body {{
+        background-color: {BG_MAIN} !important;
+    }}
+    .main {{
+        background-color: {BG_MAIN} !important;
+        color: {TEXT_LIGHT} !important;
+    }}
+
+    /* επάνω μπάρα */
+    div[data-testid="stToolbar"] {{
+        background-color: {BG_MAIN} !important;
+        color: {TEXT_LIGHT} !important;
+        border: none !important;
+    }}
+
+    /* sidebar */
+    section[data-testid="stSidebar"] {{
+        background-color: {BG_SIDEBAR} !important;
+    }}
+
+    .block-container {{
+        background-color: transparent !important;
+        padding-top: 0.5rem;
+        padding-bottom: 1.5rem;
+    }}
+
+    /* inputs & φίλτρα στο sidebar */
+    section[data-testid="stSidebar"] input[type="text"],
+    section[data-testid="stSidebar"] input[type="number"],
+    section[data-testid="stSidebar"] textarea {{
+        background-color: {CARD_COLOR} !important;
+        color: {TEXT_LIGHT} !important;
+        border-radius: 0.4rem !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+    }}
+
+    section[data-testid="stSidebar"] div[data-baseweb="select"] > div {{
+        background-color: {CARD_COLOR} !important;
+        color: {TEXT_LIGHT} !important;
+        border-radius: 0.4rem !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+    }}
+
+    section[data-testid="stSidebar"] span[data-baseweb="tag"] {{
+        background-color: rgba(255,255,255,0.16) !important;
+        color: {TEXT_LIGHT} !important;
+        border-radius: 0.4rem !important;
+    }}
+
+    section[data-testid="stSidebar"] h1 {{
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        margin-bottom: 0.5rem !important;
+    }}
+
+    footer {{visibility: hidden !important;}}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Λευκά γράμματα παντού (εκτός από τα input boxes που μένουν άσπρα όπως στο app.py)
+st.markdown(
+    f"""
+    <style>
+    h1, h2, h3, h4, h5, h6,
+    p, span, div, label {{
+        color: {TEXT_LIGHT} !important;
+    }}
+
+    section[data-testid="stSidebar"] * {{
+        color: {TEXT_LIGHT} !important;
+    }}
+
+    ::placeholder {{
+        color: rgba(255,255,255,0.6) !important;
+    }}
+
+    .stTextInput input,
+    .stNumberInput input,
+    .stTextArea textarea {{
+        color: black !important;
+        background-color: white !important;
+    }}
+
+    .stAlert p {{
+        color: black !important;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ------------------------
 # FAKE AI CLASSIFIER (DEMO)
@@ -51,7 +162,7 @@ st.markdown(
     """
     <h2 style='color:#f8fafc;'>📷 Καταχώριση νέου ευρήματος</h2>
     <p style='color:#cbd5e1;'>
-        Βγάλε ή ανέβασε φωτογραφία, άσε την AI να προτείνει τύπο & περίοδο
+        Βγάλε ή ανέβασε φωτογραφία, άσε την AI να προτείνει τύπο &amp; περίοδο
         και στη συνέχεια συμπλήρωσε/διόρθωσε τα στοιχεία.
     </p>
     """,
@@ -69,6 +180,8 @@ uploaded_file = st.file_uploader(
 )
 
 ai_result = None
+image_bytes = None
+
 if uploaded_file:
     image_bytes = uploaded_file.getvalue()
     st.image(uploaded_file, caption="Προεπισκόπηση", use_column_width=True)
@@ -129,11 +242,9 @@ with st.form("new_finding_form"):
 # SAVE LOGIC (μόνο Firestore, με εικόνα ως bytes)
 # ------------------------
 if submitted:
-    if uploaded_file is None:
+    if uploaded_file is None or image_bytes is None:
         st.error("Πρέπει να ανεβάσεις ή να βγάλεις μία φωτογραφία πριν αποθηκεύσεις.")
         st.stop()
-
-    image_bytes = uploaded_file.getvalue()
 
     db.collection("findings").add({
         "coin_name": coin_name,
