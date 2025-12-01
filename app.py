@@ -161,40 +161,42 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- Splash Screen ΜΕ LOGO (Option C) ----------
+# --------- Splash Screen ΜΕ LOGO (χωρίς HTML <img>) ----------
 if "splash_done" not in st.session_state:
+    # Λίγο στιλ για τίτλους
     st.markdown(
         f"""
         <style>
-        .splash-box {{
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: {TEXT_LIGHT};
-        }}
         .splash-title {{
             font-size: 2.4rem;
             font-weight: 700;
+            margin-top: 1rem;
             margin-bottom: 0.3rem;
+            text-align: center;
+            color: {TEXT_LIGHT};
         }}
         .splash-subtitle {{
             font-size: 1rem;
             opacity: 0.85;
             max-width: 480px;
+            margin: 0 auto;
+            text-align: center;
+            color: {TEXT_LIGHT};
         }}
         </style>
-
-        <div class="splash-box">
-            <img src="logo.png" style="width:180px; margin-bottom:25px;">
-            <div class="splash-title">AncientVision</div>
-            <div class="splash-subtitle">Φόρτωση του συστήματος...</div>
-        </div>
         """,
         unsafe_allow_html=True,
     )
+
+    # Κεντράρισμα με columns
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("logo.png", use_column_width=True)
+        st.markdown('<div class="splash-title">AncientVision</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="splash-subtitle">Φόρτωση του συστήματος...</div>',
+            unsafe_allow_html=True,
+        )
 
     progress = st.progress(0)
     for i in range(100):
