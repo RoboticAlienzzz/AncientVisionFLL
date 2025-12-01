@@ -29,7 +29,7 @@ st.set_page_config(
 
 # --------- SIDEBAR LOGO ----------
 with st.sidebar:
-    # φρόντισε να έχεις ένα logo.png δίπλα στο app.py
+    # βεβαιώσου ότι έχεις ένα logo.png δίπλα στο app.py
     st.image("logo.png", use_column_width=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -156,6 +156,65 @@ st.markdown(
     .stAlert p {{
         color: black !important;
     }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# --------- CSS για τις κάρτες "Πρόσφατα ευρήματα" ----------
+st.markdown(
+    """
+    <style>
+    .recent-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 0.8rem;
+        margin-top: 0.4rem;
+    }
+    .recent-card {
+        background-color: #111827;
+        border-radius: 0.75rem;
+        padding: 0.8rem 1rem;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+        border: 1px solid rgba(148,163,184,0.35);
+    }
+    .recent-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .recent-subtitle {
+        font-size: 0.8rem;
+        opacity: 0.85;
+        margin-bottom: 0.35rem;
+    }
+    .recent-tag-row {
+        display: flex;
+        gap: 0.4rem;
+        margin-bottom: 0.3rem;
+        flex-wrap: wrap;
+    }
+    .recent-tag {
+        font-size: 0.7rem;
+        padding: 0.12rem 0.5rem;
+        border-radius: 999px;
+        background-color: rgba(148,163,184,0.2);
+        border: 1px solid rgba(148,163,184,0.45);
+    }
+    .recent-meta-row {
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-top: 0.15rem;
+    }
+    .recent-meta-row span.emoji {
+        width: 1rem;
+        text-align: center;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -311,4 +370,57 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ΤΕΛΟΣ – δεν υπάρχει πια τμήμα για κάρτες / πρόσφατα ευρήματα
+# --------- RECENT FINDINGS (ΚΑΘΑΡΕΣ DARK ΚΑΡΤΕΛΕΣ) ----------
+st.markdown("### 🧾 Πρόσφατα ευρήματα")
+
+if findings.empty:
+    st.info("Δεν υπάρχουν ευρήματα ακόμη. Καταχώρισε το πρώτο από τη σελίδα ‘New Finding’.")
+else:
+    # χρησιμοποιούμε τα φιλτραρισμένα δεδομένα, ταξινομημένα από το πιο πρόσφατο
+    recent = filtered.copy()
+    if recent.empty:
+        st.info("Δεν υπάρχουν ευρήματα που να ταιριάζουν με τα επιλεγμένα φίλτρα.")
+    else:
+        recent = recent.sort_values("timestamp", ascending=False).head(6)
+
+        cards_html = '<div class="recent-grid">'
+        for _, row in recent.iterrows():
+            title = (row.get("coin_name") or "Untitled finding").strip()
+            site = (row.get("site_name") or "Unknown site").strip()
+            period = (row.get("period") or "Unknown period").strip()
+            type_label = (row.get("type") or "Finding").capitalize().strip()
+
+            # format ημερομηνίας
+            ts = row.get("timestamp", "")
+            try:
+                if hasattr(ts, "to_pydatetime"):
+                    dt = ts.to_pydatetime()
+                    date_str = dt.strftime("%b %d, %Y")
+                elif hasattr(ts, "strftime"):
+                    date_str = ts.strftime("%b %d, %Y")
+                else:
+                    date_str = str(ts)[:10]
+            except Exception:
+                date_str = str(ts)[:10]
+
+            cards_html += f"""
+            <div class="recent-card">
+                <div class="recent-title">{title}</div>
+                <div class="recent-subtitle">{site}</div>
+                <div class="recent-tag-row">
+                    <span class="recent-tag">{type_label}</span>
+                    <span class="recent-tag">{period}</span>
+                </div>
+                <div class="recent-meta-row">
+                    <span class="emoji">📍</span>
+                    <span>{site}</span>
+                </div>
+                <div class="recent-meta-row">
+                    <span class="emoji">📅</span>
+                    <span>{date_str}</span>
+                </div>
+            </div>
+            """
+
+        cards_html += "</div>"
+        st.markdown(cards_html, unsafe_allow_html=True)
