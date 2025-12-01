@@ -22,7 +22,7 @@ db = firestore.client()
 st.set_page_config(
     page_title="AncientVision – Dashboard",
     layout="wide",
-    page_icon="🏺"
+    page_icon="🏺",
 )
 
 # --------- GLOBAL STYLE ----------
@@ -110,18 +110,17 @@ st.markdown(
         border-radius: 0.4rem !important;
     }}
 
-    /* Μικρότερο font στο header Φίλτρα */
+    /* Μικρότερο font στο header "Φίλτρα" */
     section[data-testid="stSidebar"] h1 {{
         font-size: 1.1rem !important;
         font-weight: 600 !important;
         margin-bottom: 0.5rem !important;
     }}
 
-    /* Κρύψιμο footer */
     footer {{visibility: hidden !important;}}
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # --------- ΛΕΥΚΑ ΓΡΑΜΜΑΤΑ ΠΑΝΤΟΥ (εκτός inputs) ----------
@@ -154,37 +153,41 @@ st.markdown(
     }}
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # --------- ΑΛΛΑΓΗ ΟΝΟΜΑΤΩΝ ΣΤΟ SIDEBAR NAV (app → Dashboard, Table → Findings) ----------
 st.markdown(
     """
     <style>
-    /* Πιάνουμε τα στοιχεία του navigation στο sidebar */
-    div[data-testid="stSidebarNav"] li:nth-child(1) a span {{
+    /* Κρύβουμε όλα τα κείμενα των links στο sidebar nav */
+    div[data-testid="stSidebarNav"] li a span {
         font-size: 0px !important;
-    }}
-    div[data-testid="stSidebarNav"] li:nth-child(1) a span:after {{
+    }
+
+    /* 1ο item: app -> Dashboard */
+    div[data-testid="stSidebarNav"] li:nth-child(1) a span::after {
         content: "Dashboard";
         font-size: 1rem !important;
         color: #f8fafc !important;
-    }}
+    }
 
-    /* 2ο στοιχείο είναι "New Finding" – το αφήνουμε ίδιο */
+    /* 2ο item: New Finding (το ορίζουμε ρητά) */
+    div[data-testid="stSidebarNav"] li:nth-child(2) a span::after {
+        content: "New Finding";
+        font-size: 1rem !important;
+        color: #f8fafc !important;
+    }
 
-    /* 3ο στοιχείο: Table and Small Map -> Findings */
-    div[data-testid="stSidebarNav"] li:nth-child(3) a span {{
-        font-size: 0px !important;
-    }}
-    div[data-testid="stSidebarNav"] li:nth-child(3) a span:after {{
+    /* 3ο item: Table and Small Map -> Findings */
+    div[data-testid="stSidebarNav"] li:nth-child(3) a span::after {
         content: "Findings";
         font-size: 1rem !important;
         color: #f8fafc !important;
-    }}
+    }
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # --------- Splash Screen ----------
@@ -218,7 +221,7 @@ if "splash_done" not in st.session_state:
             <div class="splash-subtitle">Φόρτωση του συστήματος...</div>
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
     progress = st.progress(0)
@@ -240,41 +243,45 @@ def load_findings():
     data = []
     for doc in docs:
         d = doc.to_dict()
-        data.append({
-            "id": doc.id,
-            "coin_name": d.get("coin_name", ""),
-            "type": d.get("type", ""),
-            "period": d.get("period", ""),
-            "site_name": d.get("site_name", ""),
-            "latitude": d.get("latitude", None),
-            "longitude": d.get("longitude", None),
-            "image_bytes": d.get("image_bytes", None),
-            "image_url": d.get("image_url", ""),
-            "notes": d.get("notes", ""),
-            "timestamp": d.get("timestamp", "")
-        })
+        data.append(
+            {
+                "id": doc.id,
+                "coin_name": d.get("coin_name", ""),
+                "type": d.get("type", ""),
+                "period": d.get("period", ""),
+                "site_name": d.get("site_name", ""),
+                "latitude": d.get("latitude", None),
+                "longitude": d.get("longitude", None),
+                "image_bytes": d.get("image_bytes", None),
+                "image_url": d.get("image_url", ""),
+                "notes": d.get("notes", ""),
+                "timestamp": d.get("timestamp", ""),
+            }
+        )
     return pd.DataFrame(data)
+
 
 findings = load_findings()
 
 # --------- Sidebar Filters ----------
-st.sidebar.header("Φίλτρα")   # χωρίς 🔍
+st.sidebar.header("Φίλτρα")  # χωρίς emoji
 
 selected_types = st.sidebar.multiselect(
     "Τύπος ευρήματος",
     ["coin", "sherd", "other"],
-    default=["coin", "sherd", "other"]
+    default=["coin", "sherd", "other"],
 )
 
 periods = (
     sorted(findings["period"].dropna().unique().tolist())
-    if not findings.empty else []
+    if not findings.empty
+    else []
 )
 
 selected_periods = st.sidebar.multiselect(
     "Περίοδος",
     periods,
-    default=periods
+    default=periods,
 )
 
 filtered = findings.copy()
@@ -294,11 +301,11 @@ st.markdown(
             AncientVision – Archaeology Dashboard
         </div>
         <div style="font-size:1rem; opacity:0.9;">
-            Ψηφιακό εργαλείο για αναγνώριση, καταγραφή & ανάλυση αρχαιολογικών ευρημάτων.
+            Ψηφιακό εργαλείο για αναγνώριση, καταγραφή &amp; ανάλυση αρχαιολογικών ευρημάτων.
         </div>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # --------- KPI CARDS ----------
@@ -320,7 +327,7 @@ st.markdown(
         </div>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # --------- GALLERY ----------
@@ -329,8 +336,8 @@ st.markdown("### 📸 Πρόσφατα ευρήματα")
 if not filtered.empty:
     rows = filtered.sort_values("timestamp", ascending=False)
     rows = rows[
-        rows["image_bytes"].notnull() |
-        (rows["image_url"].astype(str) != "")
+        rows["image_bytes"].notnull()
+        | (rows["image_url"].astype(str) != "")
     ]
 
     if rows.empty:
@@ -339,7 +346,11 @@ if not filtered.empty:
         cols = st.columns(4)
         for idx, (_, row) in enumerate(rows.head(8).iterrows()):
             col = cols[idx % 4]
-            img = row["image_bytes"] if row["image_bytes"] not in [None, b""] else row["image_url"]
+            img = (
+                row["image_bytes"]
+                if row["image_bytes"] not in [None, b""]
+                else row["image_url"]
+            )
             col.image(img, caption=row["coin_name"], use_column_width=True)
 else:
     st.info("Δεν υπάρχουν ευρήματα ακόμη.")
