@@ -155,94 +155,88 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- CARD STYLE ΓΙΑ "Πρόσφατα ευρήματα" (τύπου screenshot) ----------
+# --------- ΝΕΟ CARD STYLE ΓΙΑ ΠΡΟΣΦΑΤΑ ΕΥΡΗΜΑΤΑ ----------
 st.markdown(
     """
     <style>
-    .finding-grid {
+    .av-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 1.6rem;
+        gap: 1.2rem;
         margin-top: 0.8rem;
     }
 
-    .finding-card {
-        background: #fdfdfd;
+    .av-card {
+        background: rgba(15,23,42,0.96); /* πολύ σκούρο μπλε */
         border-radius: 18px;
-        overflow: hidden;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.22);
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, -apple-system, "SF Pro Text", sans-serif;
+        padding: 0.9rem 1rem 1rem 1rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+        border: 1px solid rgba(148,163,184,0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
     }
 
-    .finding-top {
-        position: relative;
-        height: 180px;
-        background: linear-gradient(135deg, #dbeafe, #a5f3fc, #cffafe);
-        background-size: cover;
-        background-position: center;
+    .av-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.25rem;
     }
 
-    .finding-top .badge-type,
-    .finding-top .badge-status {
-        position: absolute;
-        top: 10px;
-        padding: 0.2rem 0.6rem;
+    .av-badge {
         font-size: 0.7rem;
+        padding: 0.18rem 0.6rem;
         border-radius: 999px;
         font-weight: 600;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        box-shadow: 0 1px 3px rgba(15,23,42,0.7);
     }
 
-    .finding-top .badge-type {
-        left: 10px;
+    .av-badge-type {
         background: #fee2e2;
         color: #b91c1c;
     }
 
-    .finding-top .badge-status {
-        right: 10px;
+    .av-badge-status {
         background: #dcfce7;
         color: #166534;
     }
 
-    .finding-bottom {
-        padding: 0.85rem 1rem 1rem 1rem;
-        background: #ffffff;
-    }
-
-    .finding-title {
+    .av-title {
         font-size: 1.0rem;
         font-weight: 700;
-        margin-bottom: 0.2rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        color: #111827;
+        color: #f9fafb;
     }
 
-    .finding-subtitle {
+    .av-subtitle {
         font-size: 0.8rem;
-        color: #6b7280;
-        margin-bottom: 0.4rem;
+        color: #e5e7eb;
+        opacity: 0.9;
     }
 
-    .finding-meta-row {
+    .av-meta-row {
         font-size: 0.8rem;
-        color: #4b5563;
+        color: #e5e7eb;
         display: flex;
         align-items: center;
         gap: 0.35rem;
-        margin-top: 0.18rem;
+        margin-top: 0.15rem;
     }
 
-    .finding-meta-row span.emoji {
+    .av-meta-row span.emoji {
         width: 1rem;
     }
 
-    /* ΠΑΝΤΑ μαύρο κείμενο ΜΕΣΑ στις κάρτες (override του λευκού) */
-    .finding-card *, .finding-card span, .finding-card div {{
-        color: #111827 !important;
-    }}
+    /* Η περιοχή των μεταδεδομένων χωρίζεται με λεπτή γραμμή */
+    .av-divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, rgba(148,163,184,0.6), transparent);
+        margin-top: 0.35rem;
+        margin-bottom: 0.15rem;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -278,7 +272,7 @@ if "splash_done" not in st.session_state:
     with col2:
         st.image("logo.png", use_column_width=True)
         st.markdown('<div class="splash-title">AncientVision</div>', unsafe_allow_html=True)
-        st.markdown(
+        st.markmarkdown(
             '<div class="splash-subtitle">Φόρτωση του συστήματος...</div>',
             unsafe_allow_html=True,
         )
@@ -398,7 +392,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- GALLERY ΩΣ ΚΑΡΤΕΣ ----------
+# --------- GALLERY ΩΣ DARK CARDS ----------
 st.markdown("### 📸 Πρόσφατα ευρήματα")
 
 if findings.empty:
@@ -410,19 +404,15 @@ else:
     if rows.empty:
         st.info("Δεν υπάρχουν φωτογραφίες ακόμη.")
     else:
-        cards_html = '<div class="finding-grid">'
+        cards_html = '<div class="av-grid">'
 
         for _, row in rows.iterrows():
-            # Ασφαλή strings με ωραία defaults
-            coin_name = (row.get("coin_name") or "Untitled finding").strip()
+            title = (row.get("coin_name") or "Untitled finding").strip()
             period = (row.get("period") or "Unknown period").strip()
             site = (row.get("site_name") or "Unknown site").strip()
             type_label = (row.get("type") or "Finding").capitalize().strip()
-            img_url = (row.get("image_url", "") or "").strip()
 
-            # Ημερομηνία
             ts = row.get("timestamp", "")
-            date_str = ""
             try:
                 if hasattr(ts, "to_pydatetime"):
                     dt = ts.to_pydatetime()
@@ -434,29 +424,22 @@ else:
             except Exception:
                 date_str = str(ts)[:10]
 
-            # Background εικόνας (αν υπάρχει URL)
-            if img_url:
-                top_style = f"background-image: url('{img_url}');"
-            else:
-                top_style = ""  # gradient μόνο
-
             cards_html += f"""
-            <div class="finding-card">
-                <div class="finding-top" style="{top_style}">
-                    <span class="badge-type">{type_label}</span>
-                    <span class="badge-status">Good</span>
+            <div class="av-card">
+                <div class="av-card-header">
+                    <span class="av-badge av-badge-type">{type_label}</span>
+                    <span class="av-badge av-badge-status">Logged</span>
                 </div>
-                <div class="finding-bottom">
-                    <div class="finding-title">{coin_name}</div>
-                    <div class="finding-subtitle">{period}</div>
-                    <div class="finding-meta-row">
-                        <span class="emoji">📍</span>
-                        <span>{site}</span>
-                    </div>
-                    <div class="finding-meta-row">
-                        <span class="emoji">📅</span>
-                        <span>{date_str}</span>
-                    </div>
+                <div class="av-title">{title}</div>
+                <div class="av-subtitle">{period}</div>
+                <div class="av-divider"></div>
+                <div class="av-meta-row">
+                    <span class="emoji">📍</span>
+                    <span>{site}</span>
+                </div>
+                <div class="av-meta-row">
+                    <span class="emoji">📅</span>
+                    <span>{date_str}</span>
                 </div>
             </div>
             """
