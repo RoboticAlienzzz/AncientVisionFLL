@@ -29,6 +29,7 @@ st.set_page_config(
 
 # --------- SIDEBAR LOGO ----------
 with st.sidebar:
+    # φρόντισε να έχεις ένα logo.png δίπλα στο app.py
     st.image("logo.png", use_column_width=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -49,12 +50,14 @@ st.markdown(
         color: {TEXT_LIGHT} !important;
     }}
 
+    /* επάνω μπάρα */
     div[data-testid="stToolbar"] {{
         background-color: {BG_MAIN} !important;
         color: {TEXT_LIGHT} !important;
         border: none !important;
     }}
 
+    /* sidebar */
     section[data-testid="stSidebar"] {{
         background-color: {BG_SIDEBAR} !important;
     }}
@@ -65,6 +68,7 @@ st.markdown(
         padding-bottom: 1.5rem;
     }}
 
+    /* header card */
     .header-card {{
         background-color: {CARD_COLOR} !important;
         color: {TEXT_LIGHT} !important;
@@ -75,6 +79,7 @@ st.markdown(
         box-shadow: 0 2px 12px rgba(0,0,0,0.35);
     }}
 
+    /* KPI row */
     .kpi-row {{
         display:flex;
         gap:1rem;
@@ -89,6 +94,7 @@ st.markdown(
         box-shadow:0 2px 6px rgba(0,0,0,0.22);
     }}
 
+    /* inputs & φίλτρα στο sidebar */
     section[data-testid="stSidebar"] input[type="text"],
     section[data-testid="stSidebar"] input[type="number"],
     section[data-testid="stSidebar"] textarea {{
@@ -155,92 +161,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- ΝΕΟ CARD STYLE ΓΙΑ ΠΡΟΣΦΑΤΑ ΕΥΡΗΜΑΤΑ ----------
-st.markdown(
-    """
-    <style>
-    .av-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 1.2rem;
-        margin-top: 0.8rem;
-    }
-
-    .av-card {
-        background: rgba(15,23,42,0.96);
-        border-radius: 18px;
-        padding: 0.9rem 1rem 1rem 1rem;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.35);
-        border: 1px solid rgba(148,163,184,0.2);
-        display: flex;
-        flex-direction: column;
-        gap: 0.55rem;
-    }
-
-    .av-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.25rem;
-    }
-
-    .av-badge {
-        font-size: 0.7rem;
-        padding: 0.18rem 0.6rem;
-        border-radius: 999px;
-        font-weight: 600;
-        box-shadow: 0 1px 3px rgba(15,23,42,0.7);
-    }
-
-    .av-badge-type {
-        background: #fee2e2;
-        color: #b91c1c;
-    }
-
-    .av-badge-status {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .av-title {
-        font-size: 1.0rem;
-        font-weight: 700;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        color: #f9fafb;
-    }
-
-    .av-subtitle {
-        font-size: 0.8rem;
-        color: #e5e7eb;
-        opacity: 0.9;
-    }
-
-    .av-meta-row {
-        font-size: 0.8rem;
-        color: #e5e7eb;
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        margin-top: 0.15rem;
-    }
-
-    .av-meta-row span.emoji {
-        width: 1rem;
-    }
-
-    .av-divider {
-        height: 1px;
-        background: linear-gradient(to right, transparent, rgba(148,163,184,0.6), transparent);
-        margin-top: 0.35rem;
-        margin-bottom: 0.15rem;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 # --------- Splash Screen ΜΕ LOGO ----------
 if "splash_done" not in st.session_state:
     st.markdown(
@@ -284,7 +204,7 @@ if "splash_done" not in st.session_state:
     st.session_state["splash_done"] = True
     st.rerun()
 
-# --------- Φόρτωση δεδομένων ----------
+# --------- Φόρτωση δεδομένων από Firestore ----------
 @st.cache_data
 def load_findings():
     try:
@@ -391,57 +311,4 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- GALLERY ΩΣ DARK CARDS ----------
-st.markdown("### 📸 Πρόσφατα ευρήματα")
-
-if findings.empty:
-    st.info("Δεν υπάρχουν ευρήματα ακόμη.")
-else:
-    rows = filtered.copy()
-    rows = rows.sort_values("timestamp", ascending=False).head(8)
-
-    if rows.empty:
-        st.info("Δεν υπάρχουν φωτογραφίες ακόμη.")
-    else:
-        cards_html = '<div class="av-grid">'
-
-        for _, row in rows.iterrows():
-            title = (row.get("coin_name") or "Untitled finding").strip()
-            period = (row.get("period") or "Unknown period").strip()
-            site = (row.get("site_name") or "Unknown site").strip()
-            type_label = (row.get("type") or "Finding").capitalize().strip()
-
-            ts = row.get("timestamp", "")
-            try:
-                if hasattr(ts, "to_pydatetime"):
-                    dt = ts.to_pydatetime()
-                    date_str = dt.strftime("%b %d, %Y")
-                elif hasattr(ts, "strftime"):
-                    date_str = ts.strftime("%b %d, %Y")
-                else:
-                    date_str = str(ts)[:10]
-            except Exception:
-                date_str = str(ts)[:10]
-
-            cards_html += f"""
-            <div class="av-card">
-                <div class="av-card-header">
-                    <span class="av-badge av-badge-type">{type_label}</span>
-                    <span class="av-badge av-badge-status">Logged</span>
-                </div>
-                <div class="av-title">{title}</div>
-                <div class="av-subtitle">{period}</div>
-                <div class="av-divider"></div>
-                <div class="av-meta-row">
-                    <span class="emoji">📍</span>
-                    <span>{site}</span>
-                </div>
-                <div class="av-meta-row">
-                    <span class="emoji">📅</span>
-                    <span>{date_str}</span>
-                </div>
-            </div>
-            """
-
-        cards_html += "</div>"
-        st.markdown(cards_html, unsafe_allow_html=True)
+# ΤΕΛΟΣ – δεν υπάρχει πια τμήμα για κάρτες / πρόσφατα ευρήματα
