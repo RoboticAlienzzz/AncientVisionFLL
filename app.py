@@ -50,8 +50,8 @@ st.markdown(
         border: none !important;
     }}
 
-    /* SIDEBAR */
-    [data-testid="stSidebar"] {{
+    /* SIDEBAR BACKGROUND */
+    section[data-testid="stSidebar"] {{
         background-color: {BG_SIDEBAR} !important;
     }}
 
@@ -88,28 +88,36 @@ st.markdown(
     }}
 
     /* ΦΙΛΤΡΑ SIDEBAR ΜΕ CARD_COLOR */
-    [data-testid="stSidebar"] input[type="text"],
-    [data-testid="stSidebar"] input[type="number"],
-    [data-testid="stSidebar"] textarea {{
+    section[data-testid="stSidebar"] input[type="text"],
+    section[data-testid="stSidebar"] input[type="number"],
+    section[data-testid="stSidebar"] textarea {{
         background-color: {CARD_COLOR} !important;
         color: {TEXT_LIGHT} !important;
         border-radius: 0.4rem !important;
         border: 1px solid rgba(255,255,255,0.15) !important;
     }}
 
-    [data-testid="stSidebar"] div[data-baseweb="select"] > div {{
+    section[data-testid="stSidebar"] div[data-baseweb="select"] > div {{
         background-color: {CARD_COLOR} !important;
         color: {TEXT_LIGHT} !important;
         border-radius: 0.4rem !important;
         border: 1px solid rgba(255,255,255,0.15) !important;
     }}
 
-    [data-testid="stSidebar"] span[data-baseweb="tag"] {{
+    section[data-testid="stSidebar"] span[data-baseweb="tag"] {{
         background-color: rgba(255,255,255,0.16) !important;
         color: {TEXT_LIGHT} !important;
         border-radius: 0.4rem !important;
     }}
 
+    /* Μικρότερο font στο header Φίλτρα */
+    section[data-testid="stSidebar"] h1 {{
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        margin-bottom: 0.5rem !important;
+    }}
+
+    /* Κρύψιμο footer */
     footer {{visibility: hidden !important;}}
     </style>
     """,
@@ -125,7 +133,7 @@ st.markdown(
         color: {TEXT_LIGHT} !important;
     }}
 
-    [data-testid="stSidebar"] * {{
+    section[data-testid="stSidebar"] * {{
         color: {TEXT_LIGHT} !important;
     }}
 
@@ -133,6 +141,7 @@ st.markdown(
         color: rgba(255,255,255,0.6) !important;
     }}
 
+    /* Inputs παραμένουν readable */
     .stTextInput input,
     .stNumberInput input,
     .stTextArea textarea {{
@@ -142,6 +151,36 @@ st.markdown(
 
     .stAlert p {{
         color: black !important;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --------- ΑΛΛΑΓΗ ΟΝΟΜΑΤΩΝ ΣΤΟ SIDEBAR NAV (app → Dashboard, Table → Findings) ----------
+st.markdown(
+    """
+    <style>
+    /* Πιάνουμε τα στοιχεία του navigation στο sidebar */
+    div[data-testid="stSidebarNav"] li:nth-child(1) a span {{
+        font-size: 0px !important;
+    }}
+    div[data-testid="stSidebarNav"] li:nth-child(1) a span:after {{
+        content: "Dashboard";
+        font-size: 1rem !important;
+        color: #f8fafc !important;
+    }}
+
+    /* 2ο στοιχείο είναι "New Finding" – το αφήνουμε ίδιο */
+
+    /* 3ο στοιχείο: Table and Small Map -> Findings */
+    div[data-testid="stSidebarNav"] li:nth-child(3) a span {{
+        font-size: 0px !important;
+    }}
+    div[data-testid="stSidebarNav"] li:nth-child(3) a span:after {{
+        content: "Findings";
+        font-size: 1rem !important;
+        color: #f8fafc !important;
     }}
     </style>
     """,
@@ -219,7 +258,7 @@ def load_findings():
 findings = load_findings()
 
 # --------- Sidebar Filters ----------
-st.sidebar.header("🔎 Φίλτρα")
+st.sidebar.header("Φίλτρα")   # χωρίς 🔍
 
 selected_types = st.sidebar.multiselect(
     "Τύπος ευρήματος",
