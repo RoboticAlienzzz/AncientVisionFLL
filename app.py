@@ -29,7 +29,7 @@ st.set_page_config(
 
 # --------- SIDEBAR LOGO ----------
 with st.sidebar:
-    # βεβαιώσου ότι έχεις ένα logo.png δίπλα στο app.py
+    # φρόντισε να έχεις ένα logo.png δίπλα στο app.py
     st.image("logo.png", use_column_width=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -161,59 +161,72 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- CSS για τις κάρτες "Πρόσφατα ευρήματα" ----------
+# --------- CSS για TIMELINE "Πρόσφατα ευρήματα" ----------
 st.markdown(
     """
     <style>
-    .recent-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 0.8rem;
-        margin-top: 0.4rem;
+    .av-timeline {
+        margin-top: 0.6rem;
+        border-left: 2px solid rgba(148,163,184,0.45);
+        padding-left: 1.4rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
     }
-    .recent-card {
-        background-color: #111827;
-        border-radius: 0.75rem;
-        padding: 0.8rem 1rem;
-        box-shadow: 0 8px 18px rgba(0,0,0,0.35);
-        border: 1px solid rgba(148,163,184,0.35);
+
+    .av-timeline-item {
+        position: relative;
+        padding-left: 0.2rem;
     }
-    .recent-title {
+
+    .av-timeline-dot {
+        position: absolute;
+        left: -1.55rem;
+        top: 0.55rem;
+        width: 11px;
+        height: 11px;
+        border-radius: 999px;
+        background: #38bdf8;
+        box-shadow: 0 0 0 4px rgba(56,189,248,0.25);
+    }
+
+    .av-timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.4rem;
+        margin-bottom: 0.1rem;
+    }
+
+    .av-timeline-title {
         font-size: 1rem;
         font-weight: 700;
-        margin-bottom: 0.15rem;
+        color: #e5e7eb;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    .recent-subtitle {
+
+    .av-timeline-date {
         font-size: 0.8rem;
-        opacity: 0.85;
-        margin-bottom: 0.35rem;
+        color: #9ca3af;
+        white-space: nowrap;
     }
-    .recent-tag-row {
-        display: flex;
-        gap: 0.4rem;
-        margin-bottom: 0.3rem;
-        flex-wrap: wrap;
+
+    .av-timeline-meta {
+        font-size: 0.8rem;
+        color: #cbd5f5;
+        opacity: 0.9;
     }
-    .recent-tag {
+
+    .av-timeline-meta span.badge {
+        display: inline-block;
         font-size: 0.7rem;
-        padding: 0.12rem 0.5rem;
+        padding: 0.08rem 0.45rem;
         border-radius: 999px;
+        margin-right: 0.25rem;
         background-color: rgba(148,163,184,0.2);
         border: 1px solid rgba(148,163,184,0.45);
-    }
-    .recent-meta-row {
-        font-size: 0.8rem;
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        margin-top: 0.15rem;
-    }
-    .recent-meta-row span.emoji {
-        width: 1rem;
-        text-align: center;
     }
     </style>
     """,
@@ -370,27 +383,35 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------- RECENT FINDINGS (ΚΑΘΑΡΕΣ DARK ΚΑΡΤΕΛΕΣ) ----------
-st.markdown("### 🧾 Πρόσφατα ευρήματα")
+# --------- TIMELINE ΠΡΟΣΦΑΤΩΝ ΕΥΡΗΜΑΤΩΝ ----------
+st.markdown("### 🧬 Ροή πρόσφατων ευρημάτων")
 
 if findings.empty:
     st.info("Δεν υπάρχουν ευρήματα ακόμη. Καταχώρισε το πρώτο από τη σελίδα ‘New Finding’.")
 else:
-    # χρησιμοποιούμε τα φιλτραρισμένα δεδομένα, ταξινομημένα από το πιο πρόσφατο
     recent = filtered.copy()
     if recent.empty:
         st.info("Δεν υπάρχουν ευρήματα που να ταιριάζουν με τα επιλεγμένα φίλτρα.")
     else:
-        recent = recent.sort_values("timestamp", ascending=False).head(6)
+        recent = recent.sort_values("timestamp", ascending=False).head(8)
 
-        cards_html = '<div class="recent-grid">'
+        # χρώματα για την κουκκίδα ανά τύπο
+        type_colors = {
+            "coin": "#38bdf8",   # γαλάζιο
+            "sherd": "#a855f7",  # μωβ
+            "other": "#f97316",  # πορτοκαλί
+        }
+
+        html = '<div class="av-timeline">'
         for _, row in recent.iterrows():
             title = (row.get("coin_name") or "Untitled finding").strip()
             site = (row.get("site_name") or "Unknown site").strip()
             period = (row.get("period") or "Unknown period").strip()
-            type_label = (row.get("type") or "Finding").capitalize().strip()
+            t = (row.get("type") or "finding").lower().strip()
+            type_label = t.capitalize()
 
-            # format ημερομηνίας
+            color = type_colors.get(t, "#e5e7eb")
+
             ts = row.get("timestamp", "")
             try:
                 if hasattr(ts, "to_pydatetime"):
@@ -403,24 +424,23 @@ else:
             except Exception:
                 date_str = str(ts)[:10]
 
-            cards_html += f"""
-            <div class="recent-card">
-                <div class="recent-title">{title}</div>
-                <div class="recent-subtitle">{site}</div>
-                <div class="recent-tag-row">
-                    <span class="recent-tag">{type_label}</span>
-                    <span class="recent-tag">{period}</span>
+            html += f"""
+            <div class="av-timeline-item">
+                <div class="av-timeline-dot"
+                     style="background:{color}; box-shadow:0 0 0 4px {color}33;"></div>
+                <div class="av-timeline-header">
+                    <div class="av-timeline-title">{title}</div>
+                    <div class="av-timeline-date">{date_str}</div>
                 </div>
-                <div class="recent-meta-row">
-                    <span class="emoji">📍</span>
-                    <span>{site}</span>
+                <div class="av-timeline-meta">
+                    <span class="badge">{type_label}</span>
+                    <span class="badge">{period}</span>
                 </div>
-                <div class="recent-meta-row">
-                    <span class="emoji">📅</span>
-                    <span>{date_str}</span>
+                <div class="av-timeline-meta">
+                    📍 {site}
                 </div>
             </div>
             """
 
-        cards_html += "</div>"
-        st.markdown(cards_html, unsafe_allow_html=True)
+        html += "</div>"
+        st.markdown(html, unsafe_allow_html=True)
